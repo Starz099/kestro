@@ -14,7 +14,7 @@ const Editor = () => {
           <Rotate />
         </TooltipTrigger>
         <TooltipContent className="bg-muted text-muted-foreground rounded-sm">
-          <p>Add to library</p>
+          <p>Restart</p>
         </TooltipContent>
       </Tooltip>
     </div>

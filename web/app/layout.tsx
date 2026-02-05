@@ -35,7 +35,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="h-screen w-screen p-4">
+            <div className="font-press-start-2p text-primary flex h-full w-full flex-col items-center border-2 p-6">
+              {children}
+            </div>
+          </div>
+        </Providers>
       </body>
     </html>
   );

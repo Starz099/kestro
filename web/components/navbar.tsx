@@ -16,18 +16,22 @@ const Navbar = () => {
           >
             <Keyboard className="h-5 w-5" />
           </button>
-          <button
-            className="hover:text-primary text-muted-foreground transition-colors"
-            aria-label="Leaderboard"
-          >
-            <Crown className="h-5 w-5" />
-          </button>
-          <button
-            className="hover:text-primary text-muted-foreground transition-colors"
-            aria-label="About"
-          >
-            <Info className="h-5 w-5" />
-          </button>
+          <Link href="/leaderboard" className="flex items-center">
+            <button
+              className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
+              aria-label="Leaderboard"
+            >
+              <Crown className="h-5 w-5" />
+            </button>
+          </Link>
+          <Link href="/about" className="flex items-center">
+            <button
+              className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
+              aria-label="About"
+            >
+              <Info className="h-5 w-5" />
+            </button>
+          </Link>
         </div>
       </div>
       <div className="flex items-center gap-3">

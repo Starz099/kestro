@@ -132,7 +132,11 @@ const SettingsPanel = () => {
         className="flex px-1 transition-opacity hover:opacity-70"
         aria-label="Toggle sound"
       >
-        {soundEnabled ? <Volume /> : <VolumeOff />}
+        {soundEnabled ? (
+          <Volume />
+        ) : (
+          <VolumeOff className="text-muted-foreground" />
+        )}
       </button>
     </div>
   );

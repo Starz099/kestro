@@ -33,7 +33,7 @@ const Footer = () => {
           className="hover:text-primary flex items-center gap-1.5 transition-colors"
           aria-label="Contact"
         >
-          made with <span className="text-red-500">❤</span> by starz
+          made with ❤ by starz
         </Link>
       </div>
     </div>

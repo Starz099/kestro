@@ -6,7 +6,7 @@ const Page = () => {
     <div className="flex h-full w-5/6 flex-col items-center justify-between">
       <Navbar />
       <div className="no-scrollbar my-8 h-full w-full overflow-y-auto text-justify">
-        <div className="text-muted-foreground mx-auto flex w-5/6 max-w-4xl flex-col gap-10 py-10 text-base leading-relaxed">
+        <div className="text-muted-foreground mx-auto flex w-5/6 max-w-4xl flex-col gap-10 text-base leading-relaxed">
           <section className="flex flex-col gap-3 text-left">
             <p className="text-primary text-center text-2xl tracking-[0.25em] uppercase">
               About

@@ -14,13 +14,14 @@ import Hash from "@/components/svgs/Hash";
 import TextSize from "@/components/svgs/TextSize";
 import Volume from "@/components/svgs/Volume";
 import VolumeOff from "@/components/svgs/VolumeOff";
-
-const editor = ["text", "vscode", "vim"] as const;
-const languages = ["english", "c++", "python", "javascript"] as const;
-const fontSizes = [12, 14, 16, 18, 20, 22, 24] as const;
-const timers = [15, 30, 60, 120] as const;
-const modes = ["timer", "words", "zen"] as const;
-const wordCounts = [10, 25, 50, 100] as const;
+import {
+  editor,
+  languages,
+  fontSizes,
+  timers,
+  modes,
+  wordCounts,
+} from "@/lib/filter-options";
 
 // Reusable Dropdown Component
 interface SettingDropdownProps<T> {
@@ -64,7 +65,7 @@ const SettingsPanel = () => {
   const [wordCount, setWordCount] = useState<number>(25);
 
   return (
-    <div className="bg-muted mx-auto flex w-max items-center gap-2 rounded-sm border p-1.5 text-xs">
+    <div className="bg-muted mx-auto flex w-max items-center gap-2 border p-1.5 text-xs shadow-md">
       <div className="flex items-center gap-1.5">
         <SettingDropdown
           icon={<Keyboard />}

@@ -2,19 +2,13 @@
 
 import Crown from "@/components/svgs/Crown";
 import Info from "@/components/svgs/Info";
-import User from "@/components/svgs/User";
+// import User from "@/components/svgs/User";
 import Keyboard from "./svgs/Keyboard";
 import Link from "next/link";
 
 import { useEffect, useState } from "react";
 import StarIcon from "./ui/star-icon";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const [starCount, setStarCount] = useState<string>("...");
@@ -76,13 +70,12 @@ const Navbar = () => {
 
         {/* auth */}
         <SignedOut>
-          <SignInButton>
+          <SignInButton mode="modal">
             <div className="hover:text-primary cursor-pointer transition-colors">
               Sign In
             </div>
           </SignInButton>
         </SignedOut>
-        {/* Show the user button when the user is signed in */}
         <SignedIn>
           <UserButton />
         </SignedIn>

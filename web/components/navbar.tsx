@@ -8,6 +8,13 @@ import Link from "next/link";
 
 import { useEffect, useState } from "react";
 import StarIcon from "./ui/star-icon";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 const Navbar = () => {
   const [starCount, setStarCount] = useState<string>("...");
@@ -31,7 +38,7 @@ const Navbar = () => {
             kestro
           </div>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
           <button
             className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
             aria-label="Keyboard Shortcuts"
@@ -56,24 +63,37 @@ const Navbar = () => {
           </Link>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="text-muted-foreground flex items-center gap-6">
         <Link
           href="https://github.com/Starz099/kestro"
           target="_blank"
-          className="text-muted-foreground hover:text-primary flex gap-1 transition-colors"
+          className="hover:text-primary flex gap-1 transition-colors"
           aria-label="Star on GitHub"
         >
           <StarIcon className="h-5 w-5" />
           {starCount}
         </Link>
-        <Link href="/auth">
+
+        {/* auth */}
+        <SignedOut>
+          <SignInButton>
+            <div className="hover:text-primary cursor-pointer transition-colors">
+              Sign In
+            </div>
+          </SignInButton>
+        </SignedOut>
+        {/* Show the user button when the user is signed in */}
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+        {/* <Link href="/auth">
           <button
             className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
             aria-label="User Profile"
           >
             <User className="h-5 w-5" />
           </button>
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

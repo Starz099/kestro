@@ -9,20 +9,31 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import StarIcon from "./ui/star-icon";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-
+import axios from "axios";
+import { formatStarCount } from "@/lib/helpers/formatters";
 const Navbar = () => {
   const [starCount, setStarCount] = useState<string>("...");
 
   useEffect(() => {
-    fetch("https://api.github.com/repos/Starz099/kestro")
-      .then((res) => res.json())
-      .then((data) => {
-        const count = data.stargazers_count;
-        const formatted =
-          count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count.toString();
-        setStarCount(formatted);
-      })
-      .catch(() => setStarCount("0"));
+    try {
+      const fetchStarCount = async () => {
+        const res = (
+          await axios.get("https://api.github.com/repos/Starz099/kestro", {
+            headers: {
+              Accept: "application/vnd.github+json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          })
+        ).data;
+        const count = Number(res.stargazers_count);
+        setStarCount(formatStarCount(count));
+      };
+
+      fetchStarCount();
+    } catch (error) {
+      console.error("Failed to fetch star count:", error);
+    }
   }, []);
   return (
     <div className="flex w-full items-center justify-between">

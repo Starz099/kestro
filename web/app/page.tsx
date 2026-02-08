@@ -1,4 +1,4 @@
-import Editor from "@/components/editor";
+import Editor from "@/components/editor/editor";
 import Footer from "@/components/footer";
 import SettingsPanel from "@/components/settings-panel";
 import Navbar from "@/components/navbar";

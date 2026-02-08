@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { useState, ReactNode } from "react";
+import { ReactNode } from "react";
 import Keyboard from "@/components/svgs/Keyboard";
 import File from "@/components/svgs/File";
 import Clock from "@/components/svgs/Clock";
@@ -22,6 +22,7 @@ import {
   modes,
   wordCounts,
   defaultFilterPreferences,
+  type FilterPreferences,
 } from "@/lib/filter-options";
 
 // Reusable Dropdown Component
@@ -55,15 +56,20 @@ const SettingDropdown = <T extends string | number>({
   </DropdownMenu>
 );
 
-const SettingsPanel = () => {
-  // Consolidated settings state
-  const [settings, setSettings] = useState(defaultFilterPreferences);
+type SettingsPanelProps = {
+  settings: FilterPreferences;
+  onSettingsChange: (settings: FilterPreferences) => void;
+};
 
+const SettingsPanel = ({
+  settings = defaultFilterPreferences,
+  onSettingsChange,
+}: SettingsPanelProps) => {
   const updateSetting = <K extends keyof typeof settings>(
     key: K,
     value: (typeof settings)[K],
   ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+    onSettingsChange({ ...settings, [key]: value });
   };
 
   return (

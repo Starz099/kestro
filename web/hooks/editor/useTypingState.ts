@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { CompletedWord } from "../../types/editor";
+
+type TypingOptions = {
+  enabled?: boolean;
+  onTypingStart?: () => void;
+  resetKey?: number;
+};
 
 type TypingState = {
   currentWordIndex: number;
@@ -11,13 +17,31 @@ type TypingState = {
   setCompletedWords: Dispatch<SetStateAction<CompletedWord[]>>;
 };
 
-export const useTypingState = (words: string[]): TypingState => {
+export const useTypingState = (
+  words: string[],
+  { enabled = true, onTypingStart, resetKey }: TypingOptions = {},
+): TypingState => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
   const [completedWords, setCompletedWords] = useState<CompletedWord[]>([]);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        !hasStartedRef.current &&
+        e.key.length === 1 &&
+        !e.ctrlKey &&
+        !e.metaKey
+      ) {
+        hasStartedRef.current = true;
+        onTypingStart?.();
+      }
+
       if (e.key === " ") {
         e.preventDefault();
         if (currentInput.trim().length > 0) {
@@ -47,7 +71,26 @@ export const useTypingState = (words: string[]): TypingState => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentInput, currentWordIndex, completedWords, words]);
+  }, [
+    currentInput,
+    currentWordIndex,
+    completedWords,
+    enabled,
+    onTypingStart,
+    words,
+  ]);
+
+  useEffect(() => {
+    if (!enabled) {
+      hasStartedRef.current = false;
+    }
+  }, [enabled, words]);
+
+  useEffect(() => {
+    if (resetKey !== undefined) {
+      hasStartedRef.current = false;
+    }
+  }, [resetKey]);
 
   return {
     currentWordIndex,

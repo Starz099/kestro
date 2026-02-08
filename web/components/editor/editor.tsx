@@ -2,17 +2,29 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Rotate from "@/components/svgs/Rotate";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import TypingWord from "./typing-word";
 import { useTypingState } from "../../hooks/editor/useTypingState";
 import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
+import type { CompletedWord } from "@/types/editor";
 
 type EditorProps = {
   words: string[];
+  isActive?: boolean;
+  onTypingStart?: () => void;
+  onStatsChange?: (completedWords: CompletedWord[]) => void;
+  onRestart?: () => void;
 };
 
-const Editor = ({ words }: EditorProps) => {
+const Editor = ({
+  words,
+  isActive = true,
+  onTypingStart,
+  onStatsChange,
+  onRestart,
+}: EditorProps) => {
+  const [restartKey, setRestartKey] = useState(0);
   const {
     currentWordIndex,
     currentInput,
@@ -20,7 +32,11 @@ const Editor = ({ words }: EditorProps) => {
     setCurrentWordIndex,
     setCurrentInput,
     setCompletedWords,
-  } = useTypingState(words);
+  } = useTypingState(words, {
+    enabled: isActive,
+    onTypingStart,
+    resetKey: restartKey,
+  });
   const textAreaRef = useRef<HTMLDivElement>(null);
   const wordsContainerRef = useRef<HTMLDivElement>(null);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -49,10 +65,15 @@ const Editor = ({ words }: EditorProps) => {
     words,
   });
 
+  useEffect(() => {
+    onStatsChange?.(completedWords);
+  }, [completedWords, onStatsChange]);
+
   const resetEditorState = useCallback(() => {
     setCurrentWordIndex(0);
     setCurrentInput("");
     setCompletedWords([]);
+    setRestartKey((prev) => prev + 1);
     wordRefs.current = [];
     charRefs.current = [];
     if (wordsContainerRef.current) {
@@ -67,6 +88,7 @@ const Editor = ({ words }: EditorProps) => {
 
   const handleRestart = () => {
     resetEditorState();
+    onRestart?.();
   };
 
   return (

@@ -21,6 +21,7 @@ import {
   timers,
   modes,
   wordCounts,
+  defaultFilterPreferences,
 } from "@/lib/filter-options";
 
 // Reusable Dropdown Component
@@ -55,29 +56,30 @@ const SettingDropdown = <T extends string | number>({
 );
 
 const SettingsPanel = () => {
-  const [editorMode, setEditorMode] = useState<(typeof editor)[number]>("text");
-  const [language, setLanguage] =
-    useState<(typeof languages)[number]>("english");
-  const [fontSize, setFontSize] = useState<number>(16);
-  const [timer, setTimer] = useState<number>(30);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [mode, setMode] = useState<(typeof modes)[number]>("timer");
-  const [wordCount, setWordCount] = useState<number>(25);
+  // Consolidated settings state
+  const [settings, setSettings] = useState(defaultFilterPreferences);
+
+  const updateSetting = <K extends keyof typeof settings>(
+    key: K,
+    value: (typeof settings)[K],
+  ) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <div className="bg-muted mx-auto flex w-max items-center gap-2 border p-1.5 text-xs shadow-md">
       <div className="flex items-center gap-1.5">
         <SettingDropdown
           icon={<Keyboard />}
-          value={editorMode}
+          value={settings.editorMode}
           options={editor}
-          onChange={setEditorMode}
+          onChange={(v) => updateSetting("editorMode", v)}
         />
         <SettingDropdown
           icon={<File />}
-          value={language}
+          value={settings.language}
           options={languages}
-          onChange={setLanguage}
+          onChange={(v) => updateSetting("language", v)}
         />
       </div>
 
@@ -87,9 +89,9 @@ const SettingsPanel = () => {
         {modes.map((m) => (
           <button
             key={m}
-            onClick={() => setMode(m)}
+            onClick={() => updateSetting("mode", m)}
             className={`text-xs transition-colors ${
-              mode === m
+              settings.mode === m
                 ? "text-primary border-b-primary border-b"
                 : "text-muted-foreground hover:text-foreground"
             }`}
@@ -102,38 +104,38 @@ const SettingsPanel = () => {
       <span className="text-muted-foreground text-xs">|</span>
 
       <div className="flex items-center gap-1.5">
-        {mode === "timer" && (
+        {settings.mode === "timer" && (
           <SettingDropdown
             icon={<Clock />}
-            value={timer}
+            value={settings.timer}
             options={timers}
-            onChange={setTimer}
+            onChange={(v) => updateSetting("timer", v)}
           />
         )}
-        {mode === "words" && (
+        {settings.mode === "words" && (
           <SettingDropdown
             icon={<Hash />}
-            value={wordCount}
+            value={settings.wordCount}
             options={wordCounts}
-            onChange={setWordCount}
+            onChange={(v) => updateSetting("wordCount", v)}
           />
         )}
         <SettingDropdown
           icon={<TextSize />}
-          value={fontSize}
+          value={settings.fontSize}
           options={fontSizes}
-          onChange={setFontSize}
+          onChange={(v) => updateSetting("fontSize", v)}
         />
       </div>
 
       <span className="text-muted-foreground text-xs">|</span>
 
       <button
-        onClick={() => setSoundEnabled(!soundEnabled)}
+        onClick={() => updateSetting("soundEnabled", !settings.soundEnabled)}
         className="flex px-1 transition-opacity hover:opacity-70"
         aria-label="Toggle sound"
       >
-        {soundEnabled ? (
+        {settings.soundEnabled ? (
           <Volume />
         ) : (
           <VolumeOff className="text-muted-foreground" />

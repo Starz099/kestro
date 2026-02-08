@@ -1,40 +1,11 @@
-"use client";
-
 import Crown from "@/components/svgs/Crown";
 import Info from "@/components/svgs/Info";
-// import User from "@/components/svgs/User";
 import Keyboard from "./svgs/Keyboard";
 import Link from "next/link";
+import StarCount from "./star-count";
+import AuthButtons from "./auth-buttons";
 
-import { useEffect, useState } from "react";
-import StarIcon from "./ui/star-icon";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import axios from "axios";
-import { formatStarCount } from "@/lib/helpers/formatters";
-const Navbar = () => {
-  const [starCount, setStarCount] = useState<string>("...");
-
-  useEffect(() => {
-    try {
-      const fetchStarCount = async () => {
-        const res = (
-          await axios.get("https://api.github.com/repos/Starz099/kestro", {
-            headers: {
-              Accept: "application/vnd.github+json",
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-          })
-        ).data;
-        const count = Number(res.stargazers_count);
-        setStarCount(formatStarCount(count));
-      };
-
-      fetchStarCount();
-    } catch (error) {
-      console.error("Failed to fetch star count:", error);
-    }
-  }, []);
+export default function Navbar() {
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex items-center gap-4">
@@ -69,38 +40,9 @@ const Navbar = () => {
         </div>
       </div>
       <div className="text-muted-foreground flex items-center gap-6">
-        <Link
-          href="https://github.com/Starz099/kestro"
-          target="_blank"
-          className="hover:text-primary flex gap-1 transition-colors"
-          aria-label="Star on GitHub"
-        >
-          <StarIcon className="h-5 w-5" />
-          {starCount}
-        </Link>
-
-        {/* auth */}
-        <SignedOut>
-          <SignInButton mode="modal">
-            <div className="hover:text-primary cursor-pointer transition-colors">
-              Sign In
-            </div>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-        {/* <Link href="/auth">
-          <button
-            className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
-            aria-label="User Profile"
-          >
-            <User className="h-5 w-5" />
-          </button>
-        </Link> */}
+        <StarCount />
+        <AuthButtons />
       </div>
     </div>
   );
-};
-
-export default Navbar;
+}

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "analyze": "next experimental-analyze",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write ."
@@ -16,6 +17,7 @@
     "@prisma/client": "^7.3.0",
     "@tabler/icons-react": "^3.36.1",
     "axios": "^1.13.4",
+    "babel-plugin-react-compiler": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "motion": "^12.33.0",

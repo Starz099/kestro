@@ -1,20 +1,8 @@
-"use client";
-
 import Footer from "@/components/footer";
 import Navbar from "@/components/navbar";
-import { Button } from "@/components/ui/button";
-import FilterDialog from "@/components/filter-dialog";
-import { useState } from "react";
-import {
-  defaultFilterPreferences,
-  EditorMode,
-  Language,
-  Timer,
-  Mode,
-  WordCount,
-} from "@/lib/filter-options";
+import LeaderboardContent from "./leaderboard-content";
 
-// Mock data - replace with actual API call
+// Mock data - replace with actual API/database call
 const mockLeaderboardData = [
   {
     rank: 1,
@@ -108,158 +96,23 @@ const mockLeaderboardData = [
   },
 ];
 
-const Page = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Filter preferences
-  const [editorMode, setEditorMode] = useState<EditorMode>(
-    defaultFilterPreferences.editorMode,
-  );
-  const [language, setLanguage] = useState<Language>(
-    defaultFilterPreferences.language,
-  );
-  const [timer, setTimer] = useState<Timer>(defaultFilterPreferences.timer);
-  const [mode, setMode] = useState<Mode>(defaultFilterPreferences.mode);
-  const [wordCount, setWordCount] = useState<WordCount>(
-    defaultFilterPreferences.wordCount,
-  );
-
-  const totalPages = 10; // Replace with actual calculation
+// Server Component - data fetching happens here
+export default function Page() {
+  // In production, replace with actual database query:
+  // const leaderboardData = await prisma.scores.findMany({ ... });
+  const leaderboardData = mockLeaderboardData;
+  const totalPages = 10; // Calculate from total count
 
   return (
-    <div className="flex h-full w-5/6 flex-col items-center justify-between">
-      <div className="w-full">
+    <div className="flex h-full w-5/6 flex-col items-center justify-between overflow-hidden">
+      <div className="flex w-full flex-1 flex-col overflow-hidden">
         <Navbar />
-        {/* Header */}
-        <div className="my-8 flex items-center justify-between">
-          <FilterDialog
-            editorMode={editorMode}
-            language={language}
-            timer={timer}
-            mode={mode}
-            wordCount={wordCount}
-            onEditorModeChange={setEditorMode}
-            onLanguageChange={setLanguage}
-            onTimerChange={setTimer}
-            onModeChange={setMode}
-            onWordCountChange={setWordCount}
-          />
-          <h1 className="text-2xl font-bold tracking-[0.25em] uppercase">
-            Leaderboard
-          </h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="shadow-md"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              &lt;
-            </Button>
-            <span className="min-w-[5rem] text-center">
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="shadow-md"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              &gt;
-            </Button>
-          </div>
-        </div>
-
-        {/* Selected Filters Display */}
-        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-medium">Active Filters:</span>
-          <span className="bg-muted px-2 py-0.5 shadow-md">{editorMode}</span>
-          <span className="bg-muted px-2 py-0.5 shadow-md">{language}</span>
-          <span className="bg-muted px-2 py-0.5 shadow-md">{mode}</span>
-          {mode === "timer" && (
-            <span className="bg-muted px-2 py-0.5 shadow-md">{timer}s</span>
-          )}
-          {mode === "words" && (
-            <span className="bg-muted px-2 py-0.5 shadow-md">
-              {wordCount} words
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="no-scrollbar mt-8 mb-4 h-full w-full overflow-y-auto">
-        {/* Leaderboard Table */}
-        <div className="no-scrollbar h-full overflow-y-auto border">
-          <table className="w-full">
-            <thead className="bg-background sticky top-0 z-10">
-              <tr className="bg-muted/50 border-b">
-                <th className="px-4 py-3 text-left text-sm font-semibold">#</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">
-                  WPM
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">
-                  Accuracy
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">
-                  Raw
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">
-                  Consistency
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">
-                  Date
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockLeaderboardData.map((entry) => (
-                <tr
-                  key={entry.rank}
-                  className="hover:bg-muted/30 border-b transition-colors"
-                >
-                  <td className="text-muted-foreground px-4 py-3 text-sm">
-                    {entry.rank}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full">
-                        <span className="text-xs">
-                          {entry.name[0].toUpperCase()}
-                        </span>
-                      </div>
-                      <span className="font-medium">{entry.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.wpm.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.accuracy.toFixed(2)}%
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.raw.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.consistency.toFixed(2)}%
-                  </td>
-                  <td className="text-muted-foreground px-4 py-3 text-right text-sm">
-                    {entry.date}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <LeaderboardContent
+          initialData={leaderboardData}
+          totalPages={totalPages}
+        />
       </div>
       <Footer />
     </div>
   );
-};
-
-export default Page;
+}

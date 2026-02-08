@@ -59,7 +59,8 @@ export const useTypingCursor = ({
 
           left -= charWidth / 2;
 
-          const top = targetRect.top - containerRect.top;
+          const verticalOffset = -4;
+          const top = targetRect.top - containerRect.top + verticalOffset;
 
           cursorRef.current.style.left = `${left}px`;
           cursorRef.current.style.top = `${top}px`;

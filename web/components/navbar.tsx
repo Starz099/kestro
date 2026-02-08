@@ -5,7 +5,11 @@ import Link from "next/link";
 import StarCount from "./star-count";
 import AuthButtons from "./auth-buttons";
 
-export default function Navbar() {
+type NavbarProps = {
+  onKeyboardClick?: () => void;
+};
+
+export default function Navbar({ onKeyboardClick }: NavbarProps) {
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex items-center gap-4">
@@ -18,6 +22,8 @@ export default function Navbar() {
           <button
             className="hover:text-primary text-muted-foreground cursor-pointer transition-colors"
             aria-label="Keyboard Shortcuts"
+            onClick={onKeyboardClick}
+            type="button"
           >
             <Keyboard className="h-5 w-5" />
           </button>

@@ -2,18 +2,17 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Rotate from "@/components/svgs/Rotate";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import TypingWord from "./typing-word";
 import { useTypingState } from "../../hooks/editor/useTypingState";
 import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
 
-const Editor = () => {
-  // Placeholder text (not generated)
-  const placeholderText =
-    "over these at line thing order the get place like since since stand open on each time give since stand open on each time give stand open on each time give over play would people too most when late tell follow any against by will use govern through that might";
-  const words = placeholderText.split(" ");
+type EditorProps = {
+  words: string[];
+};
 
+const Editor = ({ words }: EditorProps) => {
   const {
     currentWordIndex,
     currentInput,
@@ -50,7 +49,7 @@ const Editor = () => {
     words,
   });
 
-  const handleRestart = () => {
+  const resetEditorState = useCallback(() => {
     setCurrentWordIndex(0);
     setCurrentInput("");
     setCompletedWords([]);
@@ -60,6 +59,14 @@ const Editor = () => {
       wordsContainerRef.current.style.transform = "translateY(0px)";
     }
     textAreaRef.current?.focus();
+  }, [setCompletedWords, setCurrentInput, setCurrentWordIndex]);
+
+  useEffect(() => {
+    resetEditorState();
+  }, [resetEditorState, words]);
+
+  const handleRestart = () => {
+    resetEditorState();
   };
 
   return (
@@ -88,7 +95,11 @@ const Editor = () => {
 
         <div
           ref={wordsContainerRef}
-          className="flex flex-wrap gap-x-3 transition-transform duration-300 ease-out"
+          className="transition-transform duration-300 ease-out"
+          style={{
+            textAlign: "justify",
+            textAlignLast: "center",
+          }}
         >
           {words.map((word, index) => (
             <span

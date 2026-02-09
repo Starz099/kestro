@@ -2,12 +2,13 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Rotate from "@/components/svgs/Rotate";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import TypingWord from "./typing-word";
 import { useTypingState } from "../../hooks/editor/useTypingState";
 import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
 import type { CompletedWord } from "@/types/editor";
+import { useEditorStore } from "@/store/editor-store";
 
 type EditorProps = {
   words: string[];
@@ -24,19 +25,16 @@ const Editor = ({
   onStatsChange,
   onRestart,
 }: EditorProps) => {
-  const [restartKey, setRestartKey] = useState(0);
-  const {
-    currentWordIndex,
-    currentInput,
-    completedWords,
-    setCurrentWordIndex,
-    setCurrentInput,
-    setCompletedWords,
-  } = useTypingState(words, {
-    enabled: isActive,
-    onTypingStart,
-    resetKey: restartKey,
-  });
+  const restartKey = useEditorStore((state) => state.restartKey);
+  const resetTypingState = useEditorStore((state) => state.resetTypingState);
+  const { currentWordIndex, currentInput, completedWords } = useTypingState(
+    words,
+    {
+      enabled: isActive,
+      onTypingStart,
+      resetKey: restartKey,
+    },
+  );
   const textAreaRef = useRef<HTMLDivElement>(null);
   const wordsContainerRef = useRef<HTMLDivElement>(null);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -70,17 +68,14 @@ const Editor = ({
   }, [completedWords, onStatsChange]);
 
   const resetEditorState = useCallback(() => {
-    setCurrentWordIndex(0);
-    setCurrentInput("");
-    setCompletedWords([]);
-    setRestartKey((prev) => prev + 1);
+    resetTypingState();
     wordRefs.current = [];
     charRefs.current = [];
     if (wordsContainerRef.current) {
       wordsContainerRef.current.style.transform = "translateY(0px)";
     }
     textAreaRef.current?.focus();
-  }, [setCompletedWords, setCurrentInput, setCurrentWordIndex]);
+  }, [resetTypingState]);
 
   useEffect(() => {
     resetEditorState();

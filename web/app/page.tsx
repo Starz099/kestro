@@ -6,11 +6,9 @@ import Footer from "@/components/footer";
 import SettingsPanel from "@/components/settings-panel";
 import Navbar from "@/components/navbar";
 import { generateWordSequence } from "@/lib/word-generator";
-import {
-  defaultFilterPreferences,
-  type FilterPreferences,
-} from "@/lib/filter-options";
+import type { FilterPreferences } from "@/lib/filter-options";
 import type { CompletedWord } from "@/types/editor";
+import { useSettingsStore } from "@/store/settings-store";
 
 const WORD_SEQUENCE_LENGTH = 700;
 
@@ -18,9 +16,8 @@ const Page = () => {
   const [words, setWords] = useState(() =>
     generateWordSequence(WORD_SEQUENCE_LENGTH),
   );
-  const [settings, setSettings] = useState<FilterPreferences>(
-    defaultFilterPreferences,
-  );
+  const settings = useSettingsStore((state) => state.settings);
+  const setSettings = useSettingsStore((state) => state.setSettings);
   const [timeLeft, setTimeLeft] = useState<number>(settings.timer);
   const [isRunning, setIsRunning] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
@@ -84,7 +81,7 @@ const Page = () => {
 
       setSettings(nextSettings);
     },
-    [settings.mode, settings.timer],
+    [setSettings, settings.mode, settings.timer],
   );
 
   const endStats = useMemo(() => {

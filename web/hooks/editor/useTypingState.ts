@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useRef } from "react";
 import type { CompletedWord } from "../../types/editor";
+import { useEditorStore } from "@/store/editor-store";
 
 type TypingOptions = {
   enabled?: boolean;
@@ -12,18 +12,23 @@ type TypingState = {
   currentWordIndex: number;
   currentInput: string;
   completedWords: CompletedWord[];
-  setCurrentWordIndex: Dispatch<SetStateAction<number>>;
-  setCurrentInput: Dispatch<SetStateAction<string>>;
-  setCompletedWords: Dispatch<SetStateAction<CompletedWord[]>>;
+  setCurrentWordIndex: (index: number) => void;
+  setCurrentInput: (input: string) => void;
+  setCompletedWords: (words: CompletedWord[]) => void;
 };
 
 export const useTypingState = (
   words: string[],
   { enabled = true, onTypingStart, resetKey }: TypingOptions = {},
 ): TypingState => {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentInput, setCurrentInput] = useState("");
-  const [completedWords, setCompletedWords] = useState<CompletedWord[]>([]);
+  const currentWordIndex = useEditorStore((state) => state.currentWordIndex);
+  const currentInput = useEditorStore((state) => state.currentInput);
+  const completedWords = useEditorStore((state) => state.completedWords);
+  const setCurrentWordIndex = useEditorStore(
+    (state) => state.setCurrentWordIndex,
+  );
+  const setCurrentInput = useEditorStore((state) => state.setCurrentInput);
+  const setCompletedWords = useEditorStore((state) => state.setCompletedWords);
   const hasStartedRef = useRef(false);
 
   useEffect(() => {
@@ -75,6 +80,9 @@ export const useTypingState = (
     currentInput,
     currentWordIndex,
     completedWords,
+    setCompletedWords,
+    setCurrentInput,
+    setCurrentWordIndex,
     enabled,
     onTypingStart,
     words,

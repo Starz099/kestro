@@ -9,6 +9,8 @@ import { generateWordSequence } from "@/lib/word-generator";
 import type { FilterPreferences } from "@/lib/filter-options";
 import type { CompletedWord } from "@/types/editor";
 import { useSettingsStore } from "@/store/settings-store";
+import { useEditorStore } from "@/store/editor-store";
+import ResultsPanel from "@/components/results/results-panel";
 
 const WORD_SEQUENCE_LENGTH = 700;
 
@@ -22,6 +24,11 @@ const Page = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [completedWords, setCompletedWords] = useState<CompletedWord[]>([]);
+  const [endedAt, setEndedAt] = useState<number | null>(null);
+  const series = useEditorStore((state) => state.series);
+  const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
+  const currentInput = useEditorStore((state) => state.currentInput);
+  const currentWordIndex = useEditorStore((state) => state.currentWordIndex);
 
   const regenerateWords = useCallback(() => {
     setWords(generateWordSequence(WORD_SEQUENCE_LENGTH));
@@ -39,6 +46,7 @@ const Page = () => {
         if (prev <= 1) {
           setHasEnded(true);
           setIsRunning(false);
+          setEndedAt(Date.now());
           return 0;
         }
 
@@ -66,6 +74,7 @@ const Page = () => {
     setHasEnded(false);
     setTimeLeft(settings.timer);
     setCompletedWords([]);
+    setEndedAt(null);
   }, [isTimerMode, settings.timer]);
 
   const handleSettingsChange = useCallback(
@@ -77,6 +86,7 @@ const Page = () => {
         setIsRunning(false);
         setHasEnded(false);
         setTimeLeft(nextSettings.timer);
+        setEndedAt(null);
       }
 
       setSettings(nextSettings);
@@ -84,46 +94,45 @@ const Page = () => {
     [setSettings, settings.mode, settings.timer],
   );
 
-  const endStats = useMemo(() => {
-    const wrongWords = completedWords.filter((word) => !word.isCorrect).length;
-    return {
-      totalWords: completedWords.length,
-      wrongWords,
-    };
-  }, [completedWords]);
+  const durationSeconds = useMemo(() => {
+    if (typingStartedAt && endedAt) {
+      const elapsed = Math.round((endedAt - typingStartedAt) / 1000);
+      return Math.max(elapsed, 0);
+    }
+
+    if (isTimerMode) {
+      return settings.timer;
+    }
+
+    return series.length > 0 ? series[series.length - 1].second : 0;
+  }, [endedAt, isTimerMode, series, settings.timer, typingStartedAt]);
 
   return (
     <div className="flex h-full w-5/6 flex-col items-center justify-between">
       <Navbar onKeyboardClick={regenerateWords} />
       <div className="mb-24">
-        <SettingsPanel
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
+        {!hasEnded && (
+          <SettingsPanel
+            settings={settings}
+            onSettingsChange={handleSettingsChange}
+          />
+        )}
         {isTimerMode && isRunning && !hasEnded && (
           <div className="font-roboto-mono text-muted-foreground mt-6 w-full text-left text-2xl">
             {timeLeft}
           </div>
         )}
         {isTimerMode && hasEnded ? (
-          <div className="mt-10 flex flex-col items-center gap-3 text-center">
-            <h2 className="font-roboto-mono text-2xl font-semibold">
-              Game Ended
-            </h2>
-            <div className="text-muted-foreground font-roboto-mono text-sm">
-              <span>Words written: {endStats.totalWords}</span>
-            </div>
-            <div className="text-muted-foreground font-roboto-mono text-sm">
-              <span>Wrong words: {endStats.wrongWords}</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleRestart}
-              className="bg-muted text-muted-foreground hover:text-foreground mt-2 rounded-sm border px-4 py-1.5 text-sm transition-colors"
-            >
-              Restart
-            </button>
-          </div>
+          <ResultsPanel
+            words={words}
+            completedWords={completedWords}
+            currentInput={currentInput}
+            currentWordIndex={currentWordIndex}
+            durationSeconds={durationSeconds}
+            settings={settings}
+            series={series}
+            onRestart={handleRestart}
+          />
         ) : (
           <Editor
             words={words}

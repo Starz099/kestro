@@ -5,6 +5,7 @@ import Rotate from "@/components/svgs/Rotate";
 import { useCallback, useEffect, useRef } from "react";
 import TypingWord from "./typing-word";
 import { useTypingState } from "../../hooks/editor/useTypingState";
+import { useTypingSeries } from "../../hooks/editor/useTypingSeries";
 import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
 import type { CompletedWord } from "@/types/editor";
@@ -52,6 +53,8 @@ const Editor = ({
     currentWordIndex,
     currentInput,
   });
+
+  useTypingSeries(words, { enabled: isActive });
 
   useTypingCursor({
     cursorRef,

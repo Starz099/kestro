@@ -29,6 +29,10 @@ export const useTypingState = (
   );
   const setCurrentInput = useEditorStore((state) => state.setCurrentInput);
   const setCompletedWords = useEditorStore((state) => state.setCompletedWords);
+  const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
+  const setTypingStartedAt = useEditorStore(
+    (state) => state.setTypingStartedAt,
+  );
   const hasStartedRef = useRef(false);
 
   useEffect(() => {
@@ -44,6 +48,9 @@ export const useTypingState = (
         !e.metaKey
       ) {
         hasStartedRef.current = true;
+        if (!typingStartedAt) {
+          setTypingStartedAt(Date.now());
+        }
         onTypingStart?.();
       }
 
@@ -85,6 +92,8 @@ export const useTypingState = (
     setCurrentWordIndex,
     enabled,
     onTypingStart,
+    setTypingStartedAt,
+    typingStartedAt,
     words,
   ]);
 

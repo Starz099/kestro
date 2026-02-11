@@ -5,6 +5,8 @@ import type { FilterPreferences } from "@/lib/filter-options";
 import type { ResultSeriesPoint } from "@/types/results";
 import { calculateResultsMetrics } from "@/lib/results-metrics";
 import ResultsChart from "@/components/results/results-chart";
+import CallToAction from "./call-to-action";
+import { Button } from "../ui/button";
 
 const formatNumber = (value: number) =>
   Number.isFinite(value) ? value.toFixed(0) : "0";
@@ -99,18 +101,18 @@ const ResultsPanel = ({
           </div>
         </div>
       </div>
-
-      {onRestart ? (
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
+      <div className="flex items-center justify-center gap-4">
+        {onRestart ? (
+          <Button
+            variant="ghost"
             onClick={onRestart}
-            className="bg-muted text-muted-foreground hover:text-foreground rounded-sm border px-4 py-1.5 text-sm transition-colors"
+            className="cursor-pointer shadow-md"
           >
             Restart
-          </button>
-        </div>
-      ) : null}
+          </Button>
+        ) : null}
+        <CallToAction />
+      </div>
     </div>
   );
 };

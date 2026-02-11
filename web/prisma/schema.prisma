@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -17,5 +11,88 @@ model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
   username  String   @unique
+  runs      Run[]
   createdAt DateTime @default(now())
+}
+
+model Run {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  activity  ActivityType
+  language  Language
+  mode      Mode
+  editor    EditorMode
+  config    RunConfig?
+  result    RunResult?
+  series    RunSeriesPoint[]
+  createdAt DateTime         @default(now())
+
+  @@index([activity, language, mode, editor])
+  @@index([createdAt])
+}
+
+model RunConfig {
+  id    String @id @default(cuid())
+  runId String @unique
+  run   Run    @relation(fields: [runId], references: [id])
+
+  timerSeconds Int?
+  wordCount    Int?
+  taskCount    Int?
+}
+
+model RunResult {
+  id    String @id @default(cuid())
+  runId String @unique
+  run   Run    @relation(fields: [runId], references: [id])
+
+  durationSeconds Int
+  wpm             Float?
+  rawWpm          Float?
+  accuracy        Float?
+  errors          Int?
+  consistency     Float?
+
+  tasksCompleted Int?
+  tasksPerMinute Float?
+}
+
+model RunSeriesPoint {
+  id    String @id @default(cuid())
+  runId String
+  run   Run    @relation(fields: [runId], references: [id])
+
+  second    Int
+  wpm       Float?
+  rawWpm    Float?
+  errors    Int?
+  tasksDone Int?
+
+  @@unique([runId, second])
+}
+
+enum ActivityType {
+  TEXT
+  CODE
+}
+
+enum Language {
+  ENGLISH
+  PYTHON
+  JAVASCRIPT
+  CPP
+}
+
+enum Mode {
+  TIMER
+  WORDS
+  ZEN
+  TASKS
+}
+
+enum EditorMode {
+  TEXT
+  VSCODE
+  VIM
 }

@@ -1,9 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import dynamic from "next/dynamic";
-import { memo, useState } from "react";
+import { useEffect, useState } from "react";
 import { defaultFilterPreferences } from "@/lib/filter-options";
+import LeaderboardTable, { type LeaderboardEntry } from "./leaderboard-table";
 
 // Lazy load FilterDialog - only loaded when user interacts with filters
 const FilterDialog = dynamic(() => import("@/app/leaderboard/filter-dialog"), {
@@ -19,112 +21,99 @@ const FilterDialog = dynamic(() => import("@/app/leaderboard/filter-dialog"), {
   ),
 });
 
-interface LeaderboardEntry {
-  rank: number;
-  name: string;
-  wpm: number;
-  accuracy: number;
-  raw: number;
-  consistency: number;
-  date: string;
-}
-
-// Memoized table - won't re-render when parent filter state changes
-const LeaderboardTable = memo(function LeaderboardTable({
-  data,
-}: {
+type LeaderboardResponse = {
   data: LeaderboardEntry[];
-}) {
-  return (
-    <div className="no-scrollbar mt-8 mb-4 min-h-0 w-full flex-1 overflow-y-auto">
-      <div className="no-scrollbar h-full overflow-y-auto border">
-        <table className="w-full">
-          <thead className="bg-background sticky top-0 z-10">
-            <tr className="bg-muted/50 border-b">
-              <th className="px-4 py-3 text-left text-sm font-semibold">#</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">
-                Name
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                WPM
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Accuracy
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Raw
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Consistency
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Date
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((entry) => (
-              <tr
-                key={entry.rank}
-                className="hover:bg-muted/30 border-b transition-colors"
-              >
-                <td className="text-muted-foreground px-4 py-3 text-sm">
-                  {entry.rank}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full">
-                      <span className="text-xs">
-                        {entry.name[0].toUpperCase()}
-                      </span>
-                    </div>
-                    <span className="font-medium">{entry.name}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right font-mono text-sm">
-                  {entry.wpm.toFixed(2)}
-                </td>
-                <td className="px-4 py-3 text-right font-mono text-sm">
-                  {entry.accuracy.toFixed(2)}%
-                </td>
-                <td className="px-4 py-3 text-right font-mono text-sm">
-                  {entry.raw.toFixed(2)}
-                </td>
-                <td className="px-4 py-3 text-right font-mono text-sm">
-                  {entry.consistency.toFixed(2)}%
-                </td>
-                <td className="text-muted-foreground px-4 py-3 text-right text-sm">
-                  {entry.date}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-});
+};
 
 interface LeaderboardContentProps {
   initialData: LeaderboardEntry[];
-  totalPages: number;
 }
 
 export default function LeaderboardContent({
   initialData,
-  totalPages,
 }: LeaderboardContentProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Consolidated filter state - single state update instead of 5 separate ones
   const [filters, setFilters] = useState(defaultFilterPreferences);
+  const [data, setData] = useState(initialData);
+  const [isLoadingState, setIsLoadingState] = useState(() => {
+    const isDefaultSupported =
+      defaultFilterPreferences.mode === "timer" &&
+      defaultFilterPreferences.language === "english" &&
+      defaultFilterPreferences.editorMode === "text";
+    return isDefaultSupported;
+  });
 
   const updateFilter = <K extends keyof typeof filters>(
     key: K,
     value: (typeof filters)[K],
   ) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      const nextSupported =
+        next.mode === "timer" &&
+        next.language === "english" &&
+        next.editorMode === "text";
+
+      if (!nextSupported) {
+        setData([]);
+        setIsLoadingState(false);
+      } else {
+        setIsLoadingState(true);
+      }
+
+      return next;
+    });
   };
+
+  const isSupportedMode =
+    filters.mode === "timer" &&
+    filters.language === "english" &&
+    filters.editorMode === "text";
+  const filteredData = isSupportedMode ? data : [];
+  const isEmpty = !isSupportedMode || filteredData.length === 0;
+  const isLoading = isSupportedMode ? isLoadingState : false;
+
+  useEffect(() => {
+    if (!isSupportedMode) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      mode: filters.mode,
+      language: filters.language,
+      editor: filters.editorMode,
+    });
+
+    if (filters.mode === "timer") {
+      params.set("timer", String(filters.timer));
+    }
+
+    axios
+      .get<LeaderboardResponse>(`/api/leaderboard?${params.toString()}`, {
+        signal: controller.signal,
+      })
+      .then((response) => {
+        setData(response.data.data ?? []);
+      })
+      .catch((error) => {
+        if (error?.name !== "CanceledError") {
+          setData([]);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingState(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [
+    filters.editorMode,
+    filters.language,
+    filters.mode,
+    filters.timer,
+    isSupportedMode,
+  ]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -145,31 +134,7 @@ export default function LeaderboardContent({
         <h1 className="text-2xl font-bold tracking-[0.25em] uppercase">
           Leaderboard
         </h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="shadow-md"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-          >
-            &lt;
-          </Button>
-          <span className="min-w-[5rem] text-center">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="shadow-md"
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-          >
-            &gt;
-          </Button>
-        </div>
+        <div />
       </div>
 
       {/* Selected Filters Display */}
@@ -195,7 +160,11 @@ export default function LeaderboardContent({
       </div>
 
       {/* Leaderboard Table - Memoized to prevent re-renders on filter changes */}
-      <LeaderboardTable data={initialData} />
+      <LeaderboardTable
+        data={filteredData}
+        isEmpty={isEmpty}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

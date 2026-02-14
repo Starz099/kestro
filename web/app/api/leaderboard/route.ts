@@ -39,11 +39,24 @@ export const GET = async (req: Request) => {
   const editor = normalizeEnum(searchParams.get("editor"), EDITORS, "TEXT");
   const timerParam = searchParams.get("timer");
   const timerSeconds = timerParam ? Number(timerParam) : null;
+  const wordCountParam = searchParams.get("wordCount");
+  const wordCount = wordCountParam ? Number(wordCountParam) : null;
 
-  const configFilter =
-    Number.isFinite(timerSeconds) && timerSeconds !== null
-      ? { is: { timerSeconds } }
-      : undefined;
+  let configFilter:
+    | { is: { timerSeconds?: number; wordCount?: number } }
+    | undefined;
+
+  if (
+    mode === "TIMER" &&
+    Number.isFinite(timerSeconds) &&
+    timerSeconds !== null
+  ) {
+    configFilter = { is: { timerSeconds } };
+  }
+
+  if (mode === "WORDS" && Number.isFinite(wordCount) && wordCount !== null) {
+    configFilter = { is: { wordCount } };
+  }
 
   const runs = await prisma.run.findMany({
     where: {

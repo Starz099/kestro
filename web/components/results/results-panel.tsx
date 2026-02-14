@@ -14,6 +14,23 @@ const formatNumber = (value: number) =>
 const formatPercent = (value: number) =>
   Number.isFinite(value) ? `${value.toFixed(0)}%` : "0%";
 
+const getTestTypeLabel = (
+  mode: FilterPreferences["mode"],
+  durationSeconds: number,
+  wordCount: FilterPreferences["wordCount"],
+  timer: FilterPreferences["timer"],
+) => {
+  if (mode === "timer") {
+    return `timer ${timer}s`;
+  }
+
+  if (mode === "words") {
+    return `words ${wordCount} · ${durationSeconds}s`;
+  }
+
+  return `zen ${durationSeconds}s`;
+};
+
 type ResultsPanelProps = {
   words: string[];
   completedWords: CompletedWord[];
@@ -87,7 +104,12 @@ const ResultsPanel = ({
           </div>
           <div className="font-roboto-mono mt-2 text-sm">
             <div>
-              {settings.mode} {durationSeconds}s
+              {getTestTypeLabel(
+                settings.mode,
+                durationSeconds,
+                settings.wordCount,
+                settings.timer,
+              )}
             </div>
           </div>
         </div>

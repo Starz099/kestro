@@ -16,15 +16,21 @@ import { calculateResultsMetrics } from "@/lib/results-metrics";
 
 const WORD_SEQUENCE_LENGTH = 700;
 
+const getWordSequenceLength = (mode: string, wordCount: number) =>
+  mode === "words" ? wordCount : WORD_SEQUENCE_LENGTH;
+
 const Page = () => {
-  const [words, setWords] = useState(() =>
-    generateWordSequence(WORD_SEQUENCE_LENGTH),
-  );
   const settings = useSettingsStore((state) => state.settings);
   const setSettings = useSettingsStore((state) => state.setSettings);
+  const [words, setWords] = useState(() =>
+    generateWordSequence(
+      getWordSequenceLength(settings.mode, settings.wordCount),
+    ),
+  );
   const [timeLeft, setTimeLeft] = useState<number>(settings.timer);
   const [isRunning, setIsRunning] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [completedWords, setCompletedWords] = useState<CompletedWord[]>([]);
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const series = useEditorStore((state) => state.series);
@@ -35,10 +41,21 @@ const Page = () => {
   const lastSavedAtRef = useRef<number | null>(null);
 
   const regenerateWords = useCallback(() => {
-    setWords(generateWordSequence(WORD_SEQUENCE_LENGTH));
-  }, []);
+    setWords(
+      generateWordSequence(
+        getWordSequenceLength(settings.mode, settings.wordCount),
+      ),
+    );
+    setIsRunning(false);
+    setHasEnded(false);
+    setTimeLeft(settings.timer);
+    setCompletedWords([]);
+    setEndedAt(null);
+    setElapsedSeconds(0);
+  }, [settings.mode, settings.timer, settings.wordCount]);
 
   const isTimerMode = settings.mode === "timer";
+  const isWordsMode = settings.mode === "words";
 
   useEffect(() => {
     if (!isTimerMode || !isRunning) {
@@ -62,40 +79,52 @@ const Page = () => {
   }, [isRunning, isTimerMode]);
 
   const handleTypingStart = useCallback(() => {
-    if (!isTimerMode || hasEnded || isRunning) {
+    if (hasEnded || isRunning) {
       return;
     }
 
-    setIsRunning(true);
-  }, [hasEnded, isRunning, isTimerMode]);
+    if (isTimerMode || isWordsMode) {
+      setIsRunning(true);
+    }
+  }, [hasEnded, isRunning, isTimerMode, isWordsMode]);
 
   const handleRestart = useCallback(() => {
-    if (!isTimerMode) {
-      return;
-    }
-
     setIsRunning(false);
     setHasEnded(false);
     setTimeLeft(settings.timer);
     setCompletedWords([]);
     setEndedAt(null);
-  }, [isTimerMode, settings.timer]);
+    setElapsedSeconds(0);
+    setWords(
+      generateWordSequence(
+        getWordSequenceLength(settings.mode, settings.wordCount),
+      ),
+    );
+  }, [settings.mode, settings.timer, settings.wordCount]);
 
   const handleSettingsChange = useCallback(
     (nextSettings: FilterPreferences) => {
       const modeChanged = nextSettings.mode !== settings.mode;
       const timerChanged = nextSettings.timer !== settings.timer;
+      const wordCountChanged = nextSettings.wordCount !== settings.wordCount;
 
-      if (modeChanged || timerChanged) {
+      if (modeChanged || timerChanged || wordCountChanged) {
         setIsRunning(false);
         setHasEnded(false);
         setTimeLeft(nextSettings.timer);
         setEndedAt(null);
+        setCompletedWords([]);
+        setElapsedSeconds(0);
+        setWords(
+          generateWordSequence(
+            getWordSequenceLength(nextSettings.mode, nextSettings.wordCount),
+          ),
+        );
       }
 
       setSettings(nextSettings);
     },
-    [setSettings, settings.mode, settings.timer],
+    [setSettings, settings.mode, settings.timer, settings.wordCount],
   );
 
   const durationSeconds = useMemo(() => {
@@ -133,6 +162,48 @@ const Page = () => {
     series,
     words,
   ]);
+
+  useEffect(() => {
+    if (!isWordsMode || !isRunning || hasEnded) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (!typingStartedAt) {
+        setElapsedSeconds(0);
+        return;
+      }
+
+      const elapsed = Math.floor((Date.now() - typingStartedAt) / 1000);
+      setElapsedSeconds(Math.max(elapsed, 0));
+    }, 200);
+
+    return () => window.clearInterval(intervalId);
+  }, [hasEnded, isRunning, isWordsMode, typingStartedAt]);
+
+  const handleStatsChange = useCallback(
+    (nextCompletedWords: CompletedWord[]) => {
+      setCompletedWords(nextCompletedWords);
+
+      if (
+        !isWordsMode ||
+        hasEnded ||
+        nextCompletedWords.length < settings.wordCount
+      ) {
+        return;
+      }
+
+      const endTimestamp = Date.now();
+      setHasEnded(true);
+      setIsRunning(false);
+      setEndedAt(endTimestamp);
+      if (typingStartedAt) {
+        const elapsed = Math.round((endTimestamp - typingStartedAt) / 1000);
+        setElapsedSeconds(Math.max(elapsed, 0));
+      }
+    },
+    [hasEnded, isWordsMode, settings.wordCount, typingStartedAt],
+  );
 
   useEffect(() => {
     if (!hasEnded || !isSignedIn || !metrics || !endedAt) {
@@ -222,7 +293,12 @@ const Page = () => {
             {timeLeft}
           </div>
         )}
-        {isTimerMode && hasEnded ? (
+        {isWordsMode && isRunning && !hasEnded && (
+          <div className="font-roboto-mono text-muted-foreground mt-6 w-full text-left text-2xl">
+            {elapsedSeconds}
+          </div>
+        )}
+        {hasEnded ? (
           <ResultsPanel
             words={words}
             completedWords={completedWords}
@@ -236,9 +312,9 @@ const Page = () => {
         ) : (
           <Editor
             words={words}
-            isActive={!isTimerMode || !hasEnded}
+            isActive={!hasEnded}
             onTypingStart={handleTypingStart}
-            onStatsChange={setCompletedWords}
+            onStatsChange={handleStatsChange}
             onRestart={handleRestart}
           />
         )}

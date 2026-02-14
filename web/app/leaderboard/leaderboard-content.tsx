@@ -36,7 +36,8 @@ export default function LeaderboardContent({
   const [data, setData] = useState(initialData);
   const [isLoadingState, setIsLoadingState] = useState(() => {
     const isDefaultSupported =
-      defaultFilterPreferences.mode === "timer" &&
+      (defaultFilterPreferences.mode === "timer" ||
+        defaultFilterPreferences.mode === "words") &&
       defaultFilterPreferences.language === "english" &&
       defaultFilterPreferences.editorMode === "text";
     return isDefaultSupported;
@@ -49,7 +50,7 @@ export default function LeaderboardContent({
     setFilters((prev) => {
       const next = { ...prev, [key]: value };
       const nextSupported =
-        next.mode === "timer" &&
+        (next.mode === "timer" || next.mode === "words") &&
         next.language === "english" &&
         next.editorMode === "text";
 
@@ -65,7 +66,7 @@ export default function LeaderboardContent({
   };
 
   const isSupportedMode =
-    filters.mode === "timer" &&
+    (filters.mode === "timer" || filters.mode === "words") &&
     filters.language === "english" &&
     filters.editorMode === "text";
   const filteredData = isSupportedMode ? data : [];
@@ -86,6 +87,9 @@ export default function LeaderboardContent({
 
     if (filters.mode === "timer") {
       params.set("timer", String(filters.timer));
+    }
+    if (filters.mode === "words") {
+      params.set("wordCount", String(filters.wordCount));
     }
 
     axios
@@ -112,6 +116,7 @@ export default function LeaderboardContent({
     filters.language,
     filters.mode,
     filters.timer,
+    filters.wordCount,
     isSupportedMode,
   ]);
 

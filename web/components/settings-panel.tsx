@@ -72,20 +72,33 @@ const SettingsPanel = ({
     onSettingsChange({ ...settings, [key]: value });
   };
 
+  const editorOptions =
+    settings.language === "english" ? (["text"] as const) : editor;
+
+  const handleLanguageChange = (value: (typeof settings)["language"]) => {
+    const nextSettings = {
+      ...settings,
+      language: value,
+      editorMode: value === "english" ? "text" : settings.editorMode,
+    };
+
+    onSettingsChange(nextSettings);
+  };
+
   return (
     <div className="bg-muted mx-auto flex w-max items-center gap-2 border p-1.5 text-xs shadow-md">
       <div className="flex items-center gap-1.5">
         <SettingDropdown
           icon={<Keyboard />}
           value={settings.editorMode}
-          options={editor}
+          options={editorOptions}
           onChange={(v) => updateSetting("editorMode", v)}
         />
         <SettingDropdown
           icon={<File />}
           value={settings.language}
           options={languages}
-          onChange={(v) => updateSetting("language", v)}
+          onChange={handleLanguageChange}
         />
       </div>
 

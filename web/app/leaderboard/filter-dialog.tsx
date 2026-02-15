@@ -107,6 +107,15 @@ const FilterDialog = ({
   onWordCountChange,
   onSoundEnabledChange,
 }: FilterDialogProps) => {
+  const editorOptions = language === "english" ? (["text"] as const) : editor;
+
+  const handleLanguageChange = (value: Language) => {
+    onLanguageChange(value);
+    if (value === "english" && editorMode !== "text") {
+      onEditorModeChange("text");
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -130,7 +139,7 @@ const FilterDialog = ({
           <SettingDropdown
             icon={<Keyboard />}
             value={editorMode}
-            options={editor}
+            options={editorOptions}
             onChange={onEditorModeChange}
             label="Editor"
           />
@@ -140,7 +149,7 @@ const FilterDialog = ({
             icon={<File />}
             value={language}
             options={languages}
-            onChange={onLanguageChange}
+            onChange={handleLanguageChange}
             label="Language"
           />
 

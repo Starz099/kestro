@@ -16,8 +16,13 @@ import { calculateResultsMetrics } from "@/lib/results-metrics";
 
 const WORD_SEQUENCE_LENGTH = 700;
 
-const getWordSequenceLength = (mode: string, wordCount: number) =>
-  mode === "words" ? wordCount : WORD_SEQUENCE_LENGTH;
+const getWordSequenceLength = (mode: string, wordCount: number) => {
+  if (mode === "words") {
+    return wordCount;
+  }
+
+  return WORD_SEQUENCE_LENGTH;
+};
 
 const Page = () => {
   const settings = useSettingsStore((state) => state.settings);
@@ -37,6 +42,7 @@ const Page = () => {
   const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
   const currentInput = useEditorStore((state) => state.currentInput);
   const currentWordIndex = useEditorStore((state) => state.currentWordIndex);
+  const resetTypingState = useEditorStore((state) => state.resetTypingState);
   const { isSignedIn } = useAuth();
   const lastSavedAtRef = useRef<number | null>(null);
 
@@ -115,6 +121,9 @@ const Page = () => {
         setEndedAt(null);
         setCompletedWords([]);
         setElapsedSeconds(0);
+        if (modeChanged) {
+          resetTypingState();
+        }
         setWords(
           generateWordSequence(
             getWordSequenceLength(nextSettings.mode, nextSettings.wordCount),
@@ -124,7 +133,13 @@ const Page = () => {
 
       setSettings(nextSettings);
     },
-    [setSettings, settings.mode, settings.timer, settings.wordCount],
+    [
+      resetTypingState,
+      setSettings,
+      settings.mode,
+      settings.timer,
+      settings.wordCount,
+    ],
   );
 
   const durationSeconds = useMemo(() => {
@@ -223,7 +238,6 @@ const Page = () => {
     const modeMap = {
       timer: "TIMER",
       words: "WORDS",
-      zen: "ZEN",
     } as const;
     const editorMap = {
       text: "TEXT",

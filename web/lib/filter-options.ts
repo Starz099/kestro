@@ -3,7 +3,7 @@ export const editor = ["text", "vscode", "vim"] as const;
 export const languages = ["english", "c++", "python", "javascript"] as const;
 export const fontSizes = [12, 14, 16, 18, 20, 22, 24] as const;
 export const timers = [15, 30, 60, 120] as const;
-export const modes = ["timer", "words", "zen"] as const;
+export const modes = ["timer", "words"] as const;
 export const wordCounts = [10, 25, 50, 100] as const;
 
 // Type exports for TypeScript

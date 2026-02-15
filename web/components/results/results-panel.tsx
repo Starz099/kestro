@@ -27,8 +27,7 @@ const getTestTypeLabel = (
   if (mode === "words") {
     return `words ${wordCount} · ${durationSeconds}s`;
   }
-
-  return `zen ${durationSeconds}s`;
+  return `timer ${timer}s`;
 };
 
 type ResultsPanelProps = {

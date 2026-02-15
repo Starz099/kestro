@@ -75,6 +75,15 @@ const SettingsPanel = ({
   const editorOptions =
     settings.language === "english" ? (["text"] as const) : editor;
 
+  const handleEditorModeChange = (value: (typeof settings)["editorMode"]) => {
+    const nextSettings = {
+      ...settings,
+      editorMode: value,
+    };
+
+    onSettingsChange(nextSettings);
+  };
+
   const handleLanguageChange = (value: (typeof settings)["language"]) => {
     const nextSettings = {
       ...settings,
@@ -92,7 +101,7 @@ const SettingsPanel = ({
           icon={<Keyboard />}
           value={settings.editorMode}
           options={editorOptions}
-          onChange={(v) => updateSetting("editorMode", v)}
+          onChange={handleEditorModeChange}
         />
         <SettingDropdown
           icon={<File />}

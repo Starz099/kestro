@@ -42,7 +42,6 @@ const Editor = ({
   const cursorRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[][]>([]);
 
-  // Focus on mount
   useEffect(() => {
     textAreaRef.current?.focus();
   }, []);
@@ -96,11 +95,10 @@ const Editor = ({
         tabIndex={0}
         className="font-roboto-mono relative overflow-hidden text-[32px] leading-normal font-medium focus:outline-none"
         style={{
-          height: "calc(1.5em * 3)", // Fixed height for 3 lines
+          height: "calc(1.5em * 3)",
           maxHeight: "calc(1.5em * 3)",
         }}
       >
-        {/* Absolute positioned cursor */}
         <span
           ref={cursorRef}
           className="text-foreground font-roboto-mono pointer-events-none absolute animate-pulse font-medium"

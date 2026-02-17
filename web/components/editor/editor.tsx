@@ -2,7 +2,7 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Rotate from "@/components/svgs/Rotate";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import TypingWord from "./typing-word";
 import { useTypingState } from "../../hooks/editor/useTypingState";
 import { useTypingSeries } from "../../hooks/editor/useTypingSeries";
@@ -10,6 +10,10 @@ import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
 import type { CompletedWord } from "@/types/editor";
 import { useEditorStore } from "@/store/editor-store";
+import { useSettingsStore } from "@/store/settings-store";
+import { generateCodeSnippets } from "@/lib/code-generator";
+import { useTypingCode } from "@/hooks/editor/useTypingCode";
+import { useCodeSeries } from "@/hooks/editor/useCodeSeries";
 
 type EditorProps = {
   words: string[];
@@ -26,16 +30,34 @@ const Editor = ({
   onStatsChange,
   onRestart,
 }: EditorProps) => {
+  // Settings
+  const language = useSettingsStore((s) => s.settings.language);
+  const mode = useSettingsStore((s) => s.settings.mode);
+  const snippetCount = useSettingsStore((s) => s.settings.snippetCount);
+
+  // Detect if we're in code mode
+  const isCodeMode = language === "javascript" && mode === "snippets";
+
+  // Always call hooks at the top level
+  const snippets = useMemo(
+    () => (isCodeMode ? generateCodeSnippets(snippetCount || 5) : []),
+    [isCodeMode, snippetCount],
+  );
+  const codeTyping = useTypingCode(snippets);
+  useCodeSeries(snippets, { enabled: isCodeMode });
+
+  // Word mode hooks
   const restartKey = useEditorStore((state) => state.restartKey);
   const resetTypingState = useEditorStore((state) => state.resetTypingState);
   const { currentWordIndex, currentInput, completedWords } = useTypingState(
     words,
     {
-      enabled: isActive,
+      enabled: isActive && !isCodeMode,
       onTypingStart,
       resetKey: restartKey,
     },
   );
+
   const textAreaRef = useRef<HTMLDivElement>(null);
   const wordsContainerRef = useRef<HTMLDivElement>(null);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -53,7 +75,7 @@ const Editor = ({
     currentInput,
   });
 
-  useTypingSeries(words, { enabled: isActive });
+  useTypingSeries(words, { enabled: isActive && !isCodeMode });
 
   useTypingCursor({
     cursorRef,
@@ -66,8 +88,10 @@ const Editor = ({
   });
 
   useEffect(() => {
-    onStatsChange?.(completedWords);
-  }, [completedWords, onStatsChange]);
+    if (!isCodeMode) {
+      onStatsChange?.(completedWords);
+    }
+  }, [completedWords, onStatsChange, isCodeMode]);
 
   const resetEditorState = useCallback(() => {
     resetTypingState();
@@ -88,6 +112,49 @@ const Editor = ({
     onRestart?.();
   };
 
+  // --- CODE MODE RENDER ---
+  if (isCodeMode) {
+    const { currentSnippetIndex, currentInput, completedSnippets } = codeTyping;
+    return (
+      <div>
+        <div>
+          {snippets.map((snippet, idx) => (
+            <pre
+              key={idx}
+              style={{
+                background:
+                  idx === currentSnippetIndex ? "#f0f0f0" : "transparent",
+                fontWeight: idx === currentSnippetIndex ? "bold" : "normal",
+                padding: 8,
+                marginBottom: 4,
+              }}
+            >
+              {snippet}
+            </pre>
+          ))}
+        </div>
+        <textarea
+          value={currentInput}
+          onChange={() => {}} // Input handling is managed by the hook/store
+          placeholder="Type the code here..."
+          style={{ width: "100%", minHeight: 80, marginTop: 12 }}
+        />
+        <div style={{ marginTop: 12 }}>
+          Completed: {completedSnippets.length} / {snippets.length}
+        </div>
+        <Tooltip>
+          <TooltipTrigger onClick={handleRestart}>
+            <Rotate className="cursor-pointer" />
+          </TooltipTrigger>
+          <TooltipContent className="bg-muted text-muted-foreground rounded-sm">
+            <p>Restart</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
+
+  // --- WORD MODE RENDER ---
   return (
     <div className="mt-18 flex w-full flex-col items-center justify-center gap-8">
       <div

@@ -1,10 +1,11 @@
 // Shared filter options used across the application
-export const editor = ["text", "vscode", "vim"] as const;
-export const languages = ["english", "c++", "python", "javascript"] as const;
+export const editor = ["text", "vscode"] as const;
+export const languages = ["english", "javascript"] as const;
 export const fontSizes = [12, 14, 16, 18, 20, 22, 24] as const;
 export const timers = [15, 30, 60, 120] as const;
-export const modes = ["timer", "words"] as const;
+export const modes = ["timer", "words", "snippets"] as const;
 export const wordCounts = [10, 25, 50, 100] as const;
+export const snippetCounts = [1, 2, 5, 10, 20] as const;
 
 // Type exports for TypeScript
 export type EditorMode = (typeof editor)[number];
@@ -13,6 +14,7 @@ export type FontSize = (typeof fontSizes)[number];
 export type Timer = (typeof timers)[number];
 export type Mode = (typeof modes)[number];
 export type WordCount = (typeof wordCounts)[number];
+export type SnippetCount = (typeof snippetCounts)[number];
 
 // Filter preferences interface
 export interface FilterPreferences {
@@ -22,6 +24,7 @@ export interface FilterPreferences {
   timer: Timer;
   mode: Mode;
   wordCount: WordCount;
+  snippetCount?: SnippetCount;
   soundEnabled: boolean;
 }
 
@@ -33,5 +36,6 @@ export const defaultFilterPreferences: FilterPreferences = {
   timer: 30,
   mode: "timer",
   wordCount: 25,
+  snippetCount: 5,
   soundEnabled: true,
 };

@@ -238,6 +238,7 @@ const Page = () => {
     const modeMap = {
       timer: "TIMER",
       words: "WORDS",
+      snippets: "SNIPPETS",
     } as const;
     const editorMap = {
       text: "TEXT",

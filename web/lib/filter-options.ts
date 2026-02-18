@@ -1,6 +1,37 @@
 // Shared filter options used across the application
 export const editor = ["text", "vscode"] as const;
 export const languages = ["english", "javascript"] as const;
+
+export const codingLanguages: Language[] = ["javascript"];
+
+export type ActivityType = "TEXT" | "CODE";
+
+export const getActivityType = (language: Language): ActivityType => {
+  return codingLanguages.includes(language) ? "CODE" : "TEXT";
+};
+
+export const getAllowedEditorModes = (
+  language: Language,
+): readonly EditorMode[] => {
+  if (language === "english") {
+    return ["text"] as const;
+  }
+  if (codingLanguages.includes(language)) {
+    return ["vscode"] as const;
+  }
+  return editor;
+};
+
+export const getAllowedModes = (language: Language): readonly Mode[] => {
+  if (language === "english") {
+    return ["timer", "words"] as const;
+  }
+  if (codingLanguages.includes(language)) {
+    return ["timer", "snippets"] as const;
+  }
+  return modes;
+};
+
 export const fontSizes = [12, 14, 16, 18, 20, 22, 24] as const;
 export const timers = [15, 30, 60, 120] as const;
 export const modes = ["timer", "words", "snippets"] as const;

@@ -21,7 +21,10 @@ import {
   timers,
   modes,
   wordCounts,
+  snippetCounts,
   defaultFilterPreferences,
+  getAllowedEditorModes,
+  getAllowedModes,
   type FilterPreferences,
 } from "@/lib/filter-options";
 
@@ -72,8 +75,7 @@ const SettingsPanel = ({
     onSettingsChange({ ...settings, [key]: value });
   };
 
-  const editorOptions =
-    settings.language === "english" ? (["text"] as const) : editor;
+  const editorOptions = getAllowedEditorModes(settings.language);
 
   const handleEditorModeChange = (value: (typeof settings)["editorMode"]) => {
     const nextSettings = {
@@ -85,10 +87,17 @@ const SettingsPanel = ({
   };
 
   const handleLanguageChange = (value: (typeof settings)["language"]) => {
+    const allowedEditorModes = getAllowedEditorModes(value);
+    const allowedModes = getAllowedModes(value);
     const nextSettings = {
       ...settings,
       language: value,
-      editorMode: value === "english" ? "text" : settings.editorMode,
+      editorMode: allowedEditorModes.includes(settings.editorMode)
+        ? settings.editorMode
+        : allowedEditorModes[0],
+      mode: allowedModes.includes(settings.mode)
+        ? settings.mode
+        : allowedModes[0],
     };
 
     onSettingsChange(nextSettings);
@@ -114,7 +123,7 @@ const SettingsPanel = ({
       <span className="text-muted-foreground text-xs">|</span>
 
       <div className="flex w-full items-center justify-evenly gap-2">
-        {modes.map((m) => (
+        {getAllowedModes(settings.language).map((m) => (
           <button
             key={m}
             onClick={() => updateSetting("mode", m)}
@@ -148,6 +157,15 @@ const SettingsPanel = ({
             onChange={(v) => updateSetting("wordCount", v)}
           />
         )}
+        {settings.mode === "snippets" &&
+          settings.snippetCount !== undefined && (
+            <SettingDropdown
+              icon={<Hash />}
+              value={settings.snippetCount}
+              options={snippetCounts}
+              onChange={(v) => updateSetting("snippetCount", v)}
+            />
+          )}
         <SettingDropdown
           icon={<TextSize />}
           value={settings.fontSize}

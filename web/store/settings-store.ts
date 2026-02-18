@@ -3,6 +3,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import {
   defaultFilterPreferences,
+  getAllowedEditorModes,
+  getAllowedModes,
   modes,
   type FilterPreferences,
 } from "@/lib/filter-options";
@@ -13,11 +15,23 @@ type SettingsStore = {
 };
 
 const normalizeSettings = (settings: FilterPreferences): FilterPreferences => {
-  if (modes.includes(settings.mode)) {
-    return settings;
+  let normalized = { ...settings };
+
+  const allowedModes = getAllowedModes(normalized.language);
+  if (!allowedModes.includes(normalized.mode)) {
+    normalized.mode = allowedModes[0];
   }
 
-  return { ...settings, mode: defaultFilterPreferences.mode };
+  const allowedEditorModes = getAllowedEditorModes(normalized.language);
+  if (!allowedEditorModes.includes(normalized.editorMode)) {
+    normalized.editorMode = allowedEditorModes[0];
+  }
+
+  if (normalized.snippetCount === undefined) {
+    normalized.snippetCount = defaultFilterPreferences.snippetCount;
+  }
+
+  return normalized;
 };
 
 export const useSettingsStore = create<SettingsStore>()(

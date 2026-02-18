@@ -36,6 +36,10 @@ import {
   Timer,
   Mode,
   WordCount,
+  SnippetCount,
+  snippetCounts,
+  getAllowedEditorModes,
+  getAllowedModes,
 } from "@/lib/filter-options";
 
 // Reusable Dropdown Component
@@ -81,6 +85,7 @@ interface FilterDialogProps {
   timer: Timer;
   mode: Mode;
   wordCount: WordCount;
+  snippetCount?: SnippetCount;
   soundEnabled?: boolean;
   onEditorModeChange: (value: EditorMode) => void;
   onLanguageChange: (value: Language) => void;
@@ -88,6 +93,7 @@ interface FilterDialogProps {
   onTimerChange: (value: Timer) => void;
   onModeChange: (value: Mode) => void;
   onWordCountChange: (value: WordCount) => void;
+  onSnippetCountChange?: (value: SnippetCount) => void;
   onSoundEnabledChange?: (value: boolean) => void;
 }
 
@@ -98,6 +104,7 @@ const FilterDialog = ({
   timer,
   mode,
   wordCount,
+  snippetCount,
   soundEnabled,
   onEditorModeChange,
   onLanguageChange,
@@ -105,14 +112,21 @@ const FilterDialog = ({
   onTimerChange,
   onModeChange,
   onWordCountChange,
+  onSnippetCountChange,
   onSoundEnabledChange,
 }: FilterDialogProps) => {
-  const editorOptions = language === "english" ? (["text"] as const) : editor;
+  const editorOptions = getAllowedEditorModes(language);
 
   const handleLanguageChange = (value: Language) => {
     onLanguageChange(value);
-    if (value === "english" && editorMode !== "text") {
-      onEditorModeChange("text");
+    const allowedEditorModes = getAllowedEditorModes(value);
+    const allowedModes = getAllowedModes(value);
+
+    if (!allowedEditorModes.includes(editorMode)) {
+      onEditorModeChange(allowedEditorModes[0]);
+    }
+    if (!allowedModes.includes(mode)) {
+      onModeChange(allowedModes[0]);
     }
   };
 
@@ -159,7 +173,7 @@ const FilterDialog = ({
               Mode
             </label>
             <div className="flex gap-2">
-              {modes.map((m) => (
+              {getAllowedModes(language).map((m) => (
                 <button
                   key={m}
                   onClick={() => onModeChange(m)}
@@ -195,6 +209,18 @@ const FilterDialog = ({
               label="Word Count"
             />
           )}
+
+          {mode === "snippets" &&
+            snippetCount !== undefined &&
+            onSnippetCountChange && (
+              <SettingDropdown
+                icon={<Hash />}
+                value={snippetCount}
+                options={snippetCounts}
+                onChange={onSnippetCountChange}
+                label="Snippets"
+              />
+            )}
 
           {/* Font Size - Optional */}
           {fontSize !== undefined && onFontSizeChange && (

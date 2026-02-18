@@ -91,6 +91,9 @@ export default function LeaderboardContent({
     if (filters.mode === "words") {
       params.set("wordCount", String(filters.wordCount));
     }
+    if (filters.mode === "snippets") {
+      params.set("snippetCount", String(filters.snippetCount));
+    }
 
     axios
       .get<LeaderboardResponse>(`/api/leaderboard?${params.toString()}`, {
@@ -117,6 +120,7 @@ export default function LeaderboardContent({
     filters.mode,
     filters.timer,
     filters.wordCount,
+    filters.snippetCount,
     isSupportedMode,
   ]);
 
@@ -130,11 +134,13 @@ export default function LeaderboardContent({
           timer={filters.timer}
           mode={filters.mode}
           wordCount={filters.wordCount}
+          snippetCount={filters.snippetCount}
           onEditorModeChange={(v) => updateFilter("editorMode", v)}
           onLanguageChange={(v) => updateFilter("language", v)}
           onTimerChange={(v) => updateFilter("timer", v)}
           onModeChange={(v) => updateFilter("mode", v)}
           onWordCountChange={(v) => updateFilter("wordCount", v)}
+          onSnippetCountChange={(v) => updateFilter("snippetCount", v)}
         />
         <h1 className="text-2xl font-bold tracking-[0.25em] uppercase">
           Leaderboard
@@ -160,6 +166,11 @@ export default function LeaderboardContent({
         {filters.mode === "words" && (
           <span className="bg-muted px-2 py-0.5 shadow-md">
             {filters.wordCount} words
+          </span>
+        )}
+        {filters.mode === "snippets" && (
+          <span className="bg-muted px-2 py-0.5 shadow-md">
+            {filters.snippetCount} snippets
           </span>
         )}
       </div>

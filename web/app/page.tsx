@@ -7,7 +7,7 @@ import Footer from "@/components/footer";
 import SettingsPanel from "@/components/settings-panel";
 import Navbar from "@/components/navbar";
 import { generateWordSequence } from "@/lib/word-generator";
-import type { FilterPreferences } from "@/lib/filter-options";
+import { getActivityType, type FilterPreferences } from "@/lib/filter-options";
 import type { CompletedWord } from "@/types/editor";
 import { useSettingsStore } from "@/store/settings-store";
 import { useEditorStore } from "@/store/editor-store";
@@ -247,7 +247,7 @@ const Page = () => {
     } as const;
 
     const payload = {
-      activity: "TEXT",
+      activity: getActivityType(settings.language),
       language: languageMap[settings.language],
       mode: modeMap[settings.mode],
       editor: editorMap[settings.editorMode],

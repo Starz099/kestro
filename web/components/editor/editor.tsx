@@ -8,15 +8,16 @@ import { useTypingState } from "../../hooks/editor/useTypingState";
 import { useTypingSeries } from "../../hooks/editor/useTypingSeries";
 import { useWordScroll } from "../../hooks/editor/useWordScroll";
 import { useTypingCursor } from "../../hooks/editor/useTypingCursor";
-import type { CompletedWord } from "@/types/editor";
 import { useEditorStore } from "@/store/editor-store";
 import { useSettingsStore } from "@/store/settings-store";
+
+import CodeEditor from "./code-editor";
 
 type EditorProps = {
   words: string[];
   isActive?: boolean;
   onTypingStart?: () => void;
-  onStatsChange?: (completedWords: CompletedWord[]) => void;
+  onStatsChange?: (completedItems: any[]) => void;
   onRestart?: () => void;
 };
 
@@ -52,8 +53,10 @@ const Editor = ({
   const charRefs = useRef<(HTMLSpanElement | null)[][]>([]);
 
   useEffect(() => {
-    textAreaRef.current?.focus();
-  }, []);
+    if (!isCodeMode) {
+      textAreaRef.current?.focus();
+    }
+  }, [isCodeMode]);
 
   useWordScroll({
     wordsContainerRef,
@@ -62,7 +65,7 @@ const Editor = ({
     currentInput,
   });
 
-  useTypingSeries(words, { enabled: isActive && !isCodeMode });
+  useTypingSeries(words, { enabled: isActive, isCodeMode });
 
   useTypingCursor({
     cursorRef,
@@ -87,8 +90,10 @@ const Editor = ({
     if (wordsContainerRef.current) {
       wordsContainerRef.current.style.transform = "translateY(0px)";
     }
-    textAreaRef.current?.focus();
-  }, [resetTypingState]);
+    if (!isCodeMode) {
+      textAreaRef.current?.focus();
+    }
+  }, [resetTypingState, isCodeMode]);
 
   useEffect(() => {
     resetEditorState();
@@ -101,18 +106,16 @@ const Editor = ({
 
   // --- CODE MODE RENDER ---
   if (isCodeMode) {
+    const settings = useSettingsStore.getState().settings;
     return (
-      <div className="text-muted-foreground flex h-64 w-full flex-col items-center justify-center border border-dashed">
-        <p>VSCode Mode Coming Soon...</p>
-        <Tooltip>
-          <TooltipTrigger onClick={handleRestart} className="mt-4">
-            <Rotate className="cursor-pointer" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-muted text-muted-foreground rounded-sm">
-            <p>Restart</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <CodeEditor
+        key={`${restartKey}-${settings.language}`}
+        snippets={words}
+        isActive={isActive}
+        onTypingStart={onTypingStart}
+        onStatsChange={onStatsChange}
+        onRestart={onRestart}
+      />
     );
   }
 

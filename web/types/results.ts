@@ -15,6 +15,7 @@ export type ResultsMetrics = {
   consistency: number;
   durationSeconds: number;
   characters: CharacterBreakdown;
+  snippetsPerSecond?: number;
 };
 
 export type ResultSeriesPoint = {

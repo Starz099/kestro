@@ -21,18 +21,17 @@ export const useTypingState = (
   words: string[],
   { enabled = true, onTypingStart, resetKey }: TypingOptions = {},
 ): TypingState => {
-  const currentWordIndex = useEditorStore((state) => state.currentWordIndex);
-  const currentInput = useEditorStore((state) => state.currentInput);
-  const completedWords = useEditorStore((state) => state.completedWords);
-  const setCurrentWordIndex = useEditorStore(
-    (state) => state.setCurrentWordIndex,
-  );
-  const setCurrentInput = useEditorStore((state) => state.setCurrentInput);
-  const setCompletedWords = useEditorStore((state) => state.setCompletedWords);
-  const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
-  const setTypingStartedAt = useEditorStore(
-    (state) => state.setTypingStartedAt,
-  );
+  const {
+    currentWordIndex,
+    currentInput,
+    completedWords,
+    setCurrentWordIndex,
+    setCurrentInput,
+    setCompletedWords,
+    typingStartedAt,
+    setTypingStartedAt,
+    incrementKeystrokes,
+  } = useEditorStore();
   const hasStartedRef = useRef(false);
 
   useEffect(() => {
@@ -52,6 +51,13 @@ export const useTypingState = (
           setTypingStartedAt(Date.now());
         }
         onTypingStart?.();
+      }
+
+      // Increment keystrokes for any non-modifier key
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        incrementKeystrokes();
+      } else if (e.key === "Backspace") {
+        incrementKeystrokes();
       }
 
       if (e.key === " ") {

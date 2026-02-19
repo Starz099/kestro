@@ -12,11 +12,12 @@ import type { ResultSeriesPoint } from "@/types/results";
 
 type TypingSeriesOptions = {
   enabled?: boolean;
+  isCodeMode?: boolean;
 };
 
 export const useTypingSeries = (
   words: string[],
-  { enabled = true }: TypingSeriesOptions = {},
+  { enabled = true, isCodeMode = false }: TypingSeriesOptions = {},
 ) => {
   const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
   const appendSeriesPoint = useEditorStore((state) => state.appendSeriesPoint);
@@ -37,12 +38,15 @@ export const useTypingSeries = (
       }
 
       const state = useEditorStore.getState();
-      const completedWords = state.completedWords;
+      const completedItems = isCodeMode
+        ? state.completedSnippets
+        : state.completedWords;
       const currentWordIndex = state.currentWordIndex;
       const currentInput = state.currentInput;
+      const keystrokes = state.keystrokes;
 
       const completedBreakdown = calculateCharacterBreakdown(
-        completedWords,
+        completedItems,
         words,
       );
       const partial = calculatePartialBreakdown(
@@ -56,7 +60,7 @@ export const useTypingSeries = (
         missed: completedBreakdown.missed,
       };
       const wpm = calculateWpm(combined.correct, elapsedSeconds);
-      const rawWpm = calculateRawWpm(combined, elapsedSeconds);
+      const rawWpm = calculateRawWpm(keystrokes, elapsedSeconds);
       const errors = calculateErrors(combined);
 
       const point: ResultSeriesPoint = {

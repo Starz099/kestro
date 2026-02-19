@@ -1,4 +1,8 @@
-import type { CompletedWord } from "@/types/editor";
+import type {
+  CompletedWord,
+  CompletedSnippet,
+  CompletedItem,
+} from "@/types/editor";
 import type {
   CharacterBreakdown,
   ResultsMetrics,
@@ -19,7 +23,7 @@ const roundTo = (value: number, decimals = 2) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-const compareWord = (typed: string, target: string): CharacterBreakdown => {
+const compareItem = (typed: string, target: string): CharacterBreakdown => {
   let correct = 0;
   let incorrect = 0;
   let extra = 0;
@@ -70,22 +74,23 @@ export const calculatePartialBreakdown = (
 };
 
 export const calculateCharacterBreakdown = (
-  completedWords: CompletedWord[],
-  words: string[],
+  completedItems: CompletedItem[],
+  items: string[],
 ): CharacterBreakdown => {
   let correct = 0;
   let incorrect = 0;
   let extra = 0;
   let missed = 0;
 
-  completedWords.forEach((entry, index) => {
-    const target = words[index] ?? "";
+  completedItems.forEach((entry, index) => {
+    const target = items[index] ?? "";
+    const typed = "word" in entry ? entry.word : entry.code;
     const {
       correct: c,
       incorrect: i,
       extra: e,
       missed: m,
-    } = compareWord(entry.word, target);
+    } = compareItem(typed, target);
 
     correct += c;
     incorrect += i;
@@ -119,16 +124,15 @@ export const calculateWpm = (
 };
 
 export const calculateRawWpm = (
-  breakdown: CharacterBreakdown,
+  keystrokes: number,
   durationSeconds: number,
 ): number => {
   if (durationSeconds <= 0) {
     return 0;
   }
 
-  const totalTyped = breakdown.correct + breakdown.incorrect + breakdown.extra;
   const minutes = durationSeconds / 60;
-  return roundTo(totalTyped / BASE_WORD_LENGTH / minutes, 2);
+  return roundTo(keystrokes / BASE_WORD_LENGTH / minutes, 2);
 };
 
 export const calculateErrors = (breakdown: CharacterBreakdown): number =>
@@ -157,12 +161,14 @@ export const calculateConsistency = (
 };
 
 type MetricsInput = {
-  completedWords: CompletedWord[];
+  completedWords: CompletedItem[];
   words: string[];
   durationSeconds: number;
   series?: ResultSeriesPoint[];
   currentInput?: string;
   currentTarget?: string;
+  keystrokes?: number;
+  language?: string;
 };
 
 export const calculateResultsMetrics = ({
@@ -172,6 +178,8 @@ export const calculateResultsMetrics = ({
   series = [],
   currentInput,
   currentTarget,
+  keystrokes = 0,
+  language,
 }: MetricsInput): ResultsMetrics => {
   const completedBreakdown = calculateCharacterBreakdown(completedWords, words);
   const hasPartial = currentInput !== undefined && currentTarget !== undefined;
@@ -185,10 +193,22 @@ export const calculateResultsMetrics = ({
     missed: completedBreakdown.missed,
   };
   const wpm = calculateWpm(characters.correct, durationSeconds);
-  const rawWpm = calculateRawWpm(characters, durationSeconds);
+  const rawWpm = calculateRawWpm(keystrokes, durationSeconds);
   const accuracy = calculateAccuracy(characters);
   const errors = calculateErrors(characters);
   const consistency = calculateConsistency(series);
+
+  let snippetsPerSecond: number | undefined;
+  const isCode =
+    language === "javascript" ||
+    (completedWords.length > 0 && "code" in completedWords[0]);
+
+  if (isCode) {
+    snippetsPerSecond =
+      durationSeconds > 0
+        ? roundTo(completedWords.length / durationSeconds, 2)
+        : 0;
+  }
 
   return {
     wpm,
@@ -198,5 +218,6 @@ export const calculateResultsMetrics = ({
     consistency,
     durationSeconds,
     characters,
+    snippetsPerSecond,
   };
 };

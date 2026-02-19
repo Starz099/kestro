@@ -7,18 +7,30 @@ import Footer from "@/components/footer";
 import SettingsPanel from "@/components/settings-panel";
 import Navbar from "@/components/navbar";
 import { generateWordSequence } from "@/lib/word-generator";
+import { generateCodeSnippets } from "@/lib/code-generator";
 import { getActivityType, type FilterPreferences } from "@/lib/filter-options";
-import type { CompletedWord } from "@/types/editor";
+import type { CompletedWord, CompletedItem } from "@/types/editor";
 import { useSettingsStore } from "@/store/settings-store";
 import { useEditorStore } from "@/store/editor-store";
 import ResultsPanel from "@/components/results/results-panel";
 import { calculateResultsMetrics } from "@/lib/results-metrics";
 
 const WORD_SEQUENCE_LENGTH = 700;
+const CODE_SEQUENCE_LENGTH = 40;
 
-const getWordSequenceLength = (mode: string, wordCount: number) => {
-  if (mode === "words") {
-    return wordCount;
+const getSequenceLength = (settings: FilterPreferences) => {
+  const activity = getActivityType(settings.language);
+
+  if (settings.mode === "timer") {
+    return activity === "CODE" ? CODE_SEQUENCE_LENGTH : WORD_SEQUENCE_LENGTH;
+  }
+
+  if (activity === "CODE") {
+    return settings.snippetCount || 5;
+  }
+
+  if (settings.mode === "words") {
+    return settings.wordCount;
   }
 
   return WORD_SEQUENCE_LENGTH;
@@ -27,30 +39,35 @@ const getWordSequenceLength = (mode: string, wordCount: number) => {
 const Page = () => {
   const settings = useSettingsStore((state) => state.settings);
   const setSettings = useSettingsStore((state) => state.setSettings);
-  const [words, setWords] = useState(() =>
-    generateWordSequence(
-      getWordSequenceLength(settings.mode, settings.wordCount),
-    ),
-  );
+  const [words, setWords] = useState(() => {
+    const activity = getActivityType(settings.language);
+    const length = getSequenceLength(settings);
+    return activity === "CODE"
+      ? generateCodeSnippets(length)
+      : generateWordSequence(length);
+  });
   const [timeLeft, setTimeLeft] = useState<number>(settings.timer);
   const [isRunning, setIsRunning] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [completedWords, setCompletedWords] = useState<CompletedWord[]>([]);
+  const [completedWords, setCompletedWords] = useState<CompletedItem[]>([]);
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const series = useEditorStore((state) => state.series);
   const typingStartedAt = useEditorStore((state) => state.typingStartedAt);
   const currentInput = useEditorStore((state) => state.currentInput);
   const currentWordIndex = useEditorStore((state) => state.currentWordIndex);
+  const keystrokes = useEditorStore((state) => state.keystrokes);
   const resetTypingState = useEditorStore((state) => state.resetTypingState);
   const { isSignedIn } = useAuth();
   const lastSavedAtRef = useRef<number | null>(null);
 
   const regenerateWords = useCallback(() => {
+    const activity = getActivityType(settings.language);
+    const length = getSequenceLength(settings);
     setWords(
-      generateWordSequence(
-        getWordSequenceLength(settings.mode, settings.wordCount),
-      ),
+      activity === "CODE"
+        ? generateCodeSnippets(length)
+        : generateWordSequence(length),
     );
     setIsRunning(false);
     setHasEnded(false);
@@ -58,10 +75,11 @@ const Page = () => {
     setCompletedWords([]);
     setEndedAt(null);
     setElapsedSeconds(0);
-  }, [settings.mode, settings.timer, settings.wordCount]);
+  }, [settings]);
 
   const isTimerMode = settings.mode === "timer";
   const isWordsMode = settings.mode === "words";
+  const isSnippetsMode = settings.mode === "snippets";
 
   useEffect(() => {
     if (!isTimerMode || !isRunning) {
@@ -89,10 +107,10 @@ const Page = () => {
       return;
     }
 
-    if (isTimerMode || isWordsMode) {
+    if (isTimerMode || isWordsMode || isSnippetsMode) {
       setIsRunning(true);
     }
-  }, [hasEnded, isRunning, isTimerMode, isWordsMode]);
+  }, [hasEnded, isRunning, isTimerMode, isWordsMode, isSnippetsMode]);
 
   const handleRestart = useCallback(() => {
     setIsRunning(false);
@@ -101,45 +119,53 @@ const Page = () => {
     setCompletedWords([]);
     setEndedAt(null);
     setElapsedSeconds(0);
+    const activity = getActivityType(settings.language);
+    const length = getSequenceLength(settings);
     setWords(
-      generateWordSequence(
-        getWordSequenceLength(settings.mode, settings.wordCount),
-      ),
+      activity === "CODE"
+        ? generateCodeSnippets(length)
+        : generateWordSequence(length),
     );
-  }, [settings.mode, settings.timer, settings.wordCount]);
+  }, [settings]);
 
   const handleSettingsChange = useCallback(
     (nextSettings: FilterPreferences) => {
       const modeChanged = nextSettings.mode !== settings.mode;
       const timerChanged = nextSettings.timer !== settings.timer;
       const wordCountChanged = nextSettings.wordCount !== settings.wordCount;
+      const languageChanged = nextSettings.language !== settings.language;
+      const snippetCountChanged =
+        nextSettings.snippetCount !== settings.snippetCount;
 
-      if (modeChanged || timerChanged || wordCountChanged) {
+      if (
+        modeChanged ||
+        timerChanged ||
+        wordCountChanged ||
+        languageChanged ||
+        snippetCountChanged
+      ) {
         setIsRunning(false);
         setHasEnded(false);
         setTimeLeft(nextSettings.timer);
         setEndedAt(null);
         setCompletedWords([]);
         setElapsedSeconds(0);
-        if (modeChanged) {
+        if (modeChanged || languageChanged) {
           resetTypingState();
         }
+
+        const activity = getActivityType(nextSettings.language);
+        const length = getSequenceLength(nextSettings);
         setWords(
-          generateWordSequence(
-            getWordSequenceLength(nextSettings.mode, nextSettings.wordCount),
-          ),
+          activity === "CODE"
+            ? generateCodeSnippets(length)
+            : generateWordSequence(length),
         );
       }
 
       setSettings(nextSettings);
     },
-    [
-      resetTypingState,
-      setSettings,
-      settings.mode,
-      settings.timer,
-      settings.wordCount,
-    ],
+    [resetTypingState, setSettings, settings],
   );
 
   const durationSeconds = useMemo(() => {
@@ -167,6 +193,8 @@ const Page = () => {
       series,
       currentInput,
       currentTarget: words[currentWordIndex] ?? "",
+      keystrokes,
+      language: settings.language,
     });
   }, [
     completedWords,
@@ -176,10 +204,12 @@ const Page = () => {
     hasEnded,
     series,
     words,
+    keystrokes,
+    settings.language,
   ]);
 
   useEffect(() => {
-    if (!isWordsMode || !isRunning || hasEnded) {
+    if (!(isWordsMode || isSnippetsMode) || !isRunning || hasEnded) {
       return undefined;
     }
 
@@ -197,15 +227,28 @@ const Page = () => {
   }, [hasEnded, isRunning, isWordsMode, typingStartedAt]);
 
   const handleStatsChange = useCallback(
-    (nextCompletedWords: CompletedWord[]) => {
+    (nextCompletedWords: CompletedItem[]) => {
       setCompletedWords(nextCompletedWords);
 
-      if (
-        !isWordsMode ||
-        hasEnded ||
-        nextCompletedWords.length < settings.wordCount
-      ) {
-        return;
+      const isWords = getActivityType(settings.language) === "TEXT";
+
+      if (isWords) {
+        if (
+          !isWordsMode ||
+          hasEnded ||
+          nextCompletedWords.length < settings.wordCount
+        ) {
+          return;
+        }
+      } else {
+        // Snippets mode logic
+        if (
+          !isSnippetsMode ||
+          hasEnded ||
+          nextCompletedWords.length < (settings.snippetCount || 5)
+        ) {
+          return;
+        }
       }
 
       const endTimestamp = Date.now();
@@ -217,7 +260,15 @@ const Page = () => {
         setElapsedSeconds(Math.max(elapsed, 0));
       }
     },
-    [hasEnded, isWordsMode, settings.wordCount, typingStartedAt],
+    [
+      hasEnded,
+      isSnippetsMode,
+      isWordsMode,
+      settings.language,
+      settings.snippetCount,
+      settings.wordCount,
+      typingStartedAt,
+    ],
   );
 
   useEffect(() => {
@@ -308,7 +359,7 @@ const Page = () => {
             {timeLeft}
           </div>
         )}
-        {isWordsMode && isRunning && !hasEnded && (
+        {(isWordsMode || isSnippetsMode) && isRunning && !hasEnded && (
           <div className="font-roboto-mono text-muted-foreground mt-6 w-full text-left text-2xl">
             {elapsedSeconds}
           </div>
@@ -323,6 +374,8 @@ const Page = () => {
             settings={settings}
             series={series}
             onRestart={handleRestart}
+            keystrokes={keystrokes}
+            language={settings.language}
           />
         ) : (
           <Editor

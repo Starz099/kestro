@@ -305,6 +305,8 @@ const Page = () => {
       config: {
         timerSeconds: settings.mode === "timer" ? settings.timer : undefined,
         wordCount: settings.mode === "words" ? settings.wordCount : undefined,
+        snippetCount:
+          settings.mode === "snippets" ? settings.snippetCount : undefined,
       },
       result: {
         durationSeconds: metrics.durationSeconds,
@@ -313,12 +315,22 @@ const Page = () => {
         accuracy: metrics.accuracy,
         errors: metrics.errors,
         consistency: metrics.consistency,
+        snippetsCompleted:
+          getActivityType(settings.language) === "CODE"
+            ? completedWords.length
+            : undefined,
+        snippetsPerMinute:
+          getActivityType(settings.language) === "CODE" &&
+          metrics.durationSeconds > 0
+            ? (completedWords.length / metrics.durationSeconds) * 60
+            : undefined,
       },
       series: series.map((point) => ({
         second: point.second,
         wpm: point.wpm,
         rawWpm: point.rawWpm,
         errors: point.errors,
+        snippetsDone: point.snippetsDone,
       })),
     };
 

@@ -11,6 +11,7 @@ type RunPayload = {
     timerSeconds?: number;
     wordCount?: number;
     taskCount?: number;
+    snippetCount?: number;
   };
   result: {
     durationSeconds: number;
@@ -21,6 +22,8 @@ type RunPayload = {
     consistency?: number;
     tasksCompleted?: number;
     tasksPerMinute?: number;
+    snippetsCompleted?: number;
+    snippetsPerMinute?: number;
   };
   series?: Array<{
     second: number;
@@ -28,6 +31,7 @@ type RunPayload = {
     rawWpm?: number;
     errors?: number;
     tasksDone?: number;
+    snippetsDone?: number;
   }>;
 };
 
@@ -72,7 +76,8 @@ export const POST = async (req: NextRequest) => {
     body.config &&
     (body.config.timerSeconds !== undefined ||
       body.config.wordCount !== undefined ||
-      body.config.taskCount !== undefined);
+      body.config.taskCount !== undefined ||
+      body.config.snippetCount !== undefined);
   const hasSeries = Array.isArray(body.series) && body.series.length > 0;
 
   const run = await prisma.run.create({
@@ -88,6 +93,7 @@ export const POST = async (req: NextRequest) => {
               timerSeconds: body.config?.timerSeconds ?? null,
               wordCount: body.config?.wordCount ?? null,
               taskCount: body.config?.taskCount ?? null,
+              snippetCount: body.config?.snippetCount ?? null,
             },
           }
         : undefined,
@@ -101,6 +107,8 @@ export const POST = async (req: NextRequest) => {
           consistency: body.result.consistency ?? null,
           tasksCompleted: body.result.tasksCompleted ?? null,
           tasksPerMinute: body.result.tasksPerMinute ?? null,
+          snippetsCompleted: body.result.snippetsCompleted ?? null,
+          snippetsPerMinute: body.result.snippetsPerMinute ?? null,
         },
       },
       series: hasSeries
@@ -112,6 +120,7 @@ export const POST = async (req: NextRequest) => {
                 rawWpm: point.rawWpm ?? null,
                 errors: point.errors ?? null,
                 tasksDone: point.tasksDone ?? null,
+                snippetsDone: point.snippetsDone ?? null,
               })),
             },
           }

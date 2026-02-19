@@ -68,6 +68,7 @@ export const useTypingSeries = (
         wpm,
         rawWpm,
         errors,
+        snippetsDone: isCodeMode ? state.completedSnippets.length : undefined,
       };
 
       lastSecondRef.current = elapsedSeconds;

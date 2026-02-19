@@ -23,6 +23,7 @@ export type ResultSeriesPoint = {
   wpm: number;
   rawWpm: number;
   errors: number;
+  snippetsDone?: number;
 };
 
 export type TestConfig = FilterPreferences;

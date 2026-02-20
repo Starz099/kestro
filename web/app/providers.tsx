@@ -9,7 +9,7 @@ export function Providers({ children }: ThemeProviderProps) {
   // Set defaultTheme="dark" to make dark mode the default
   return (
     <ClerkProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         {children}
       </ThemeProvider>
     </ClerkProvider>

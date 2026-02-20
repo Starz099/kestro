@@ -18,7 +18,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kestro.starzz.dev'),
+  metadataBase: new URL("https://kestro.starzz.dev"),
 
   title: "Kestro — Where syntax becomes instinct",
   description:

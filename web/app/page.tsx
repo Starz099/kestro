@@ -9,11 +9,12 @@ import Navbar from "@/components/navbar";
 import { generateWordSequence } from "@/lib/word-generator";
 import { generateCodeSnippets } from "@/lib/code-generator";
 import { getActivityType, type FilterPreferences } from "@/lib/filter-options";
-import type { CompletedWord, CompletedItem } from "@/types/editor";
+import type { CompletedItem } from "@/types/editor";
 import { useSettingsStore } from "@/store/settings-store";
 import { useEditorStore } from "@/store/editor-store";
 import ResultsPanel from "@/components/results/results-panel";
 import { calculateResultsMetrics } from "@/lib/results-metrics";
+import Tracker from "@/components/Tracker";
 
 const WORD_SEQUENCE_LENGTH = 700;
 const CODE_SEQUENCE_LENGTH = 40;
@@ -224,7 +225,7 @@ const Page = () => {
     }, 200);
 
     return () => window.clearInterval(intervalId);
-  }, [hasEnded, isRunning, isWordsMode, typingStartedAt]);
+  }, [hasEnded, isRunning, isWordsMode, typingStartedAt, isSnippetsMode]);
 
   const handleStatsChange = useCallback(
     (nextCompletedWords: CompletedItem[]) => {
@@ -354,10 +355,19 @@ const Page = () => {
     };
 
     void saveRun();
-  }, [endedAt, hasEnded, isSignedIn, metrics, series, settings]);
+  }, [
+    endedAt,
+    hasEnded,
+    isSignedIn,
+    metrics,
+    series,
+    settings,
+    completedWords.length,
+  ]);
 
   return (
     <div className="flex h-full w-5/6 flex-col items-center justify-between">
+      <Tracker />
       <Navbar onKeyboardClick={regenerateWords} />
       <div className="mb-24">
         {!hasEnded && (

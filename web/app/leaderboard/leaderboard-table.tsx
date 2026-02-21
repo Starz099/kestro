@@ -10,7 +10,7 @@ export type LeaderboardEntry = {
   raw?: number;
   consistency?: number;
   // Coding mode fields
-  // codingWpm?: number;
+  codingWpm?: number;
   snippetsPerMinute?: number;
   snippetsCompleted?: number;
   durationSeconds?: number;
@@ -44,9 +44,9 @@ const LeaderboardTable = memo(function LeaderboardTable({
               </th>
               {isCodingMode ? (
                 <>
-                  {/* <th className="px-4 py-3 text-right text-sm font-semibold">
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
                     Coding WPM
-                  </th> */}
+                  </th>
                   <th className="px-4 py-3 text-right text-sm font-semibold">
                     Snippets/min
                   </th>
@@ -82,7 +82,7 @@ const LeaderboardTable = memo(function LeaderboardTable({
             {isLoading ? (
               <tr className="border-b">
                 <td
-                  colSpan={isCodingMode ? 6 : 8}
+                  colSpan={isCodingMode ? 7 : 8}
                   className="text-muted-foreground px-4 py-10 text-center text-sm"
                 >
                   Loading runs...
@@ -91,7 +91,7 @@ const LeaderboardTable = memo(function LeaderboardTable({
             ) : isEmpty ? (
               <tr className="border-b">
                 <td
-                  colSpan={isCodingMode ? 6 : 8}
+                  colSpan={isCodingMode ? 7 : 8}
                   className="text-muted-foreground px-4 py-10 text-center text-sm"
                 >
                   No runs for this mode yet.
@@ -118,9 +118,9 @@ const LeaderboardTable = memo(function LeaderboardTable({
                   </td>
                   {isCodingMode ? (
                     <>
-                      {/* <td className="px-4 py-3 text-right font-mono text-sm">
+                      <td className="px-4 py-3 text-right font-mono text-sm">
                         {entry.codingWpm?.toFixed(2) ?? ""}
-                      </td> */}
+                      </td>
                       <td className="px-4 py-3 text-right font-mono text-sm">
                         {entry.snippetsPerMinute?.toFixed(2) ?? ""}
                       </td>

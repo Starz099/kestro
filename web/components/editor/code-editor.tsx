@@ -1,7 +1,7 @@
 "use client";
 
 import { DiffEditor } from "@monaco-editor/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { useEditorStore } from "@/store/editor-store";
 import { useSettingsStore } from "@/store/settings-store";
 import type { CompletedSnippet } from "@/types/coding";
@@ -31,6 +31,17 @@ const CodeEditor = ({
 
   const currentSnippet = snippets[currentWordIndex] || "";
 
+  // Sound playback setup
+  const soundRef = useRef<HTMLAudioElement | null>(null);
+  const soundEnabled = useSettingsStore((s) => s.settings.soundEnabled);
+  // Initialize sound asset in effect
+  useEffect(() => {
+    if (!soundRef.current && typeof window !== "undefined") {
+      soundRef.current = new Audio("/sounds/key_1.mp3");
+      soundRef.current.volume = 0.1;
+    }
+  }, []);
+
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;
     const modifiedEditor = editor.getModifiedEditor();
@@ -59,9 +70,19 @@ const CodeEditor = ({
             state.incrementKeystrokes();
           }
         } else if (change.rangeLength > 0) {
+          // Play sound if enabled
+          if (soundEnabled && soundRef.current) {
+            soundRef.current.currentTime = 0;
+            soundRef.current.play();
+          }
           state.incrementKeystrokes();
         }
       });
+      // Play sound if enabled
+      if (soundEnabled && soundRef.current) {
+        soundRef.current.currentTime = 0;
+        soundRef.current.play();
+      }
 
       // Start timer on first change
       if (!startedAt && value.length > 0) {

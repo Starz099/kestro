@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { CompletedWord } from "../../types/editor";
 import { useEditorStore } from "@/store/editor-store";
+import { useSettingsStore } from "@/store/settings-store";
 
 type TypingOptions = {
   enabled?: boolean;
@@ -33,6 +34,14 @@ export const useTypingState = (
     incrementKeystrokes,
   } = useEditorStore();
   const hasStartedRef = useRef(false);
+  // Sound playback setup
+  const soundRef = useRef<HTMLAudioElement | null>(null);
+  // Import settings store for soundEnabled
+  const soundEnabled = useSettingsStore((s) => s.settings.soundEnabled);
+  useEffect(() => {
+    soundRef.current = new Audio("/sounds/key_1.mp3");
+    soundRef.current.volume = 0.1;
+  }, []);
 
   useEffect(() => {
     if (!enabled) {
@@ -56,8 +65,18 @@ export const useTypingState = (
       // Increment keystrokes for any non-modifier key
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
         incrementKeystrokes();
+        // Play sound if enabled
+        if (soundEnabled && soundRef.current) {
+          soundRef.current.currentTime = 0;
+          soundRef.current.play();
+        }
       } else if (e.key === "Backspace") {
         incrementKeystrokes();
+        // Play sound if enabled
+        if (soundEnabled && soundRef.current) {
+          soundRef.current.currentTime = 0;
+          soundRef.current.play();
+        }
       }
 
       if (e.key === " ") {

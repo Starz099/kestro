@@ -49,35 +49,16 @@ export default function LeaderboardContent({
   ) => {
     setFilters((prev) => {
       const next = { ...prev, [key]: value };
-      const nextSupported =
-        (next.mode === "timer" || next.mode === "words") &&
-        next.language === "english" &&
-        next.editorMode === "text";
-
-      if (!nextSupported) {
-        setData([]);
-        setIsLoadingState(false);
-      } else {
-        setIsLoadingState(true);
-      }
-
+      setIsLoadingState(true);
       return next;
     });
   };
 
-  const isSupportedMode =
-    (filters.mode === "timer" || filters.mode === "words") &&
-    filters.language === "english" &&
-    filters.editorMode === "text";
-  const filteredData = isSupportedMode ? data : [];
-  const isEmpty = !isSupportedMode || filteredData.length === 0;
-  const isLoading = isSupportedMode ? isLoadingState : false;
+  const filteredData = data;
+  const isEmpty = filteredData.length === 0;
+  const isLoading = isLoadingState;
 
   useEffect(() => {
-    if (!isSupportedMode) {
-      return;
-    }
-
     const controller = new AbortController();
     const params = new URLSearchParams({
       mode: filters.mode,
@@ -121,7 +102,6 @@ export default function LeaderboardContent({
     filters.timer,
     filters.wordCount,
     filters.snippetCount,
-    isSupportedMode,
   ]);
 
   return (

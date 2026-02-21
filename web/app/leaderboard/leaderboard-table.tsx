@@ -3,11 +3,17 @@ import { memo } from "react";
 export type LeaderboardEntry = {
   rank: number;
   name: string;
-  wpm: number;
-  accuracy: number;
-  raw: number;
-  consistency: number;
   date: string;
+  // Text mode fields
+  wpm?: number;
+  accuracy?: number;
+  raw?: number;
+  consistency?: number;
+  // Coding mode fields
+  // codingWpm?: number;
+  snippetsPerMinute?: number;
+  snippetsCompleted?: number;
+  durationSeconds?: number;
 };
 
 type LeaderboardTableProps = {
@@ -21,6 +27,11 @@ const LeaderboardTable = memo(function LeaderboardTable({
   isEmpty,
   isLoading,
 }: LeaderboardTableProps) {
+  // Determine if coding mode based on first entry
+  const isCodingMode =
+    data.length > 0 &&
+    // (data[0].codingWpm !== undefined ||
+    data[0].snippetsPerMinute !== undefined;
   return (
     <div className="no-scrollbar mt-8 mb-4 min-h-0 w-full flex-1 overflow-y-auto">
       <div className="no-scrollbar h-full overflow-y-auto border">
@@ -31,18 +42,37 @@ const LeaderboardTable = memo(function LeaderboardTable({
               <th className="px-4 py-3 text-left text-sm font-semibold">
                 Name
               </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                WPM
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Accuracy
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Raw
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-semibold">
-                Consistency
-              </th>
+              {isCodingMode ? (
+                <>
+                  {/* <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Coding WPM
+                  </th> */}
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Snippets/min
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Snippets Done
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Time (s)
+                  </th>
+                </>
+              ) : (
+                <>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    WPM
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Accuracy
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Raw
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Consistency
+                  </th>
+                </>
+              )}
               <th className="px-4 py-3 text-right text-sm font-semibold">
                 Date
               </th>
@@ -52,7 +82,7 @@ const LeaderboardTable = memo(function LeaderboardTable({
             {isLoading ? (
               <tr className="border-b">
                 <td
-                  colSpan={7}
+                  colSpan={isCodingMode ? 6 : 8}
                   className="text-muted-foreground px-4 py-10 text-center text-sm"
                 >
                   Loading runs...
@@ -61,7 +91,7 @@ const LeaderboardTable = memo(function LeaderboardTable({
             ) : isEmpty ? (
               <tr className="border-b">
                 <td
-                  colSpan={7}
+                  colSpan={isCodingMode ? 6 : 8}
                   className="text-muted-foreground px-4 py-10 text-center text-sm"
                 >
                   No runs for this mode yet.
@@ -86,18 +116,37 @@ const LeaderboardTable = memo(function LeaderboardTable({
                       <span className="font-medium">{entry.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.wpm.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.accuracy.toFixed(2)}%
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.raw.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-sm">
-                    {entry.consistency.toFixed(2)}%
-                  </td>
+                  {isCodingMode ? (
+                    <>
+                      {/* <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.codingWpm?.toFixed(2) ?? ""}
+                      </td> */}
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.snippetsPerMinute?.toFixed(2) ?? ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.snippetsCompleted ?? ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.durationSeconds ?? ""}
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.wpm?.toFixed(2) ?? ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.accuracy?.toFixed(2) ?? ""}%
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.raw?.toFixed(2) ?? ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm">
+                        {entry.consistency?.toFixed(2) ?? ""}%
+                      </td>
+                    </>
+                  )}
                   <td className="text-muted-foreground px-4 py-3 text-right text-sm">
                     {entry.date}
                   </td>

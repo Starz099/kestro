@@ -24,6 +24,7 @@ type RunPayload = {
     tasksPerMinute?: number;
     snippetsCompleted?: number;
     snippetsPerMinute?: number;
+    codingWpm?: number;
   };
   series?: Array<{
     second: number;
@@ -32,6 +33,8 @@ type RunPayload = {
     errors?: number;
     tasksDone?: number;
     snippetsDone?: number;
+    code?: string;
+    isCorrect?: boolean;
   }>;
 };
 
@@ -72,59 +75,57 @@ export const POST = async (req: NextRequest) => {
     },
   });
 
-  const hasConfig =
-    body.config &&
-    (body.config.timerSeconds !== undefined ||
-      body.config.wordCount !== undefined ||
-      body.config.taskCount !== undefined ||
-      body.config.snippetCount !== undefined);
-  const hasSeries = Array.isArray(body.series) && body.series.length > 0;
+  // Calculate codingWpm if activity is CODE and not provided
+  let codingWpm = body.result?.codingWpm ?? null;
+  if (
+    body.activity === "CODE" &&
+    (codingWpm === null || codingWpm === undefined)
+  ) {
+    // Calculate codingWpm: total letters in completed snippets / 5 / (durationSeconds / 60)
+    let totalLetters = 0;
+    if (Array.isArray(body.series)) {
+      // If series contains completed snippets with code, sum their lengths
+      const codes = body.series.map((s) => s.code).filter(Boolean);
+      console.log("Completed snippet codes:", codes);
+      totalLetters = codes.reduce((sum, code) => sum + code.length, 0);
+    }
+    // Fallback: if series not available, estimate with snippetsCompleted * avg snippet length
+    if (
+      totalLetters === 0 &&
+      body.result.snippetsCompleted &&
+      body.result.snippetsCompleted > 0
+    ) {
+      totalLetters = body.result.snippetsCompleted * 40; // Assume avg snippet length 40
+    }
+    const durationSeconds = body.result.durationSeconds;
+    codingWpm =
+      durationSeconds > 0 ? totalLetters / 5 / (durationSeconds / 60) : 0;
+  }
 
   const run = await prisma.run.create({
     data: {
       userId: dbUser.id,
+      username,
       activity: body.activity as never,
       language: body.language as never,
       mode: body.mode as never,
       editor: body.editor as never,
-      config: hasConfig
-        ? {
-            create: {
-              timerSeconds: body.config?.timerSeconds ?? null,
-              wordCount: body.config?.wordCount ?? null,
-              taskCount: body.config?.taskCount ?? null,
-              snippetCount: body.config?.snippetCount ?? null,
-            },
-          }
-        : undefined,
-      result: {
-        create: {
-          durationSeconds: body.result.durationSeconds,
-          wpm: body.result.wpm ?? null,
-          rawWpm: body.result.rawWpm ?? null,
-          accuracy: body.result.accuracy ?? null,
-          errors: body.result.errors ?? null,
-          consistency: body.result.consistency ?? null,
-          tasksCompleted: body.result.tasksCompleted ?? null,
-          tasksPerMinute: body.result.tasksPerMinute ?? null,
-          snippetsCompleted: body.result.snippetsCompleted ?? null,
-          snippetsPerMinute: body.result.snippetsPerMinute ?? null,
-        },
-      },
-      series: hasSeries
-        ? {
-            createMany: {
-              data: body.series!.map((point) => ({
-                second: point.second,
-                wpm: point.wpm ?? null,
-                rawWpm: point.rawWpm ?? null,
-                errors: point.errors ?? null,
-                tasksDone: point.tasksDone ?? null,
-                snippetsDone: point.snippetsDone ?? null,
-              })),
-            },
-          }
-        : undefined,
+      timerSeconds: body.config?.timerSeconds ?? null,
+      wordCount: body.config?.wordCount ?? null,
+      taskCount: body.config?.taskCount ?? null,
+      snippetCount: body.config?.snippetCount ?? null,
+      durationSeconds: body.result.durationSeconds,
+      wpm: body.result.wpm ?? null,
+      rawWpm: body.result.rawWpm ?? null,
+      accuracy: body.result.accuracy ?? null,
+      errors: body.result.errors ?? null,
+      consistency: body.result.consistency ?? null,
+      tasksCompleted: body.result.tasksCompleted ?? null,
+      tasksPerMinute: body.result.tasksPerMinute ?? null,
+      snippetsCompleted: body.result.snippetsCompleted ?? null,
+      snippetsPerMinute: body.result.snippetsPerMinute ?? null,
+      codingWpm,
+      // runSeriesPoints creation (series) can be handled separately if needed
     },
     select: { id: true },
   });

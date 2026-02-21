@@ -11,66 +11,55 @@ model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
   username  String   @unique
-  runs      Run[]
+  runs      Run[]    @relation("UserRuns")
   createdAt DateTime @default(now())
 }
 
 model Run {
-  id        String           @id @default(cuid())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id])
-  activity  ActivityType
-  language  Language
-  mode      Mode
-  editor    EditorMode
-  config    RunConfig?
-  result    RunResult?
-  series    RunSeriesPoint[]
-  createdAt DateTime         @default(now())
+  id                String           @id @default(cuid())
+  userId            String
+  username          String
+  activity          ActivityType
+  language          Language
+  mode              Mode
+  editor            EditorMode
+  timerSeconds      Int?
+  wordCount         Int?
+  taskCount         Int?
+  snippetCount      Int?
+  durationSeconds   Int?
+  wpm               Float?
+  rawWpm            Float?
+  accuracy          Float?
+  errors            Int?
+  consistency       Float?
+  tasksCompleted    Int?
+  tasksPerMinute    Float?
+  snippetsCompleted Int?
+  snippetsPerMinute Float?
+  codingWpm         Float?
+  createdAt         DateTime         @default(now())
+  user              User             @relation("UserRuns", fields: [userId], references: [id])
+  runSeriesPoints   RunSeriesPoint[] @relation("RunSeriesPoints")
 
   @@index([activity, language, mode, editor])
   @@index([createdAt])
 }
 
-model RunConfig {
-  id    String @id @default(cuid())
-  runId String @unique
-  run   Run    @relation(fields: [runId], references: [id])
+// Removed RunConfig
 
-  timerSeconds Int?
-  wordCount    Int?
-  taskCount    Int?
-  snippetCount Int?
-}
-
-model RunResult {
-  id    String @id @default(cuid())
-  runId String @unique
-  run   Run    @relation(fields: [runId], references: [id])
-
-  durationSeconds Int
-  wpm             Float?
-  rawWpm          Float?
-  accuracy        Float?
-  errors          Int?
-  consistency     Float?
-
-  tasksCompleted Int?
-  tasksPerMinute Float?
-  snippetsCompleted Int?
-  snippetsPerMinute Float?
-}
+// Removed RunResult
 
 model RunSeriesPoint {
   id    String @id @default(cuid())
   runId String
-  run   Run    @relation(fields: [runId], references: [id])
+  run   Run    @relation("RunSeriesPoints", fields: [runId], references: [id])
 
-  second    Int
-  wpm       Float?
-  rawWpm    Float?
-  errors    Int?
-  tasksDone Int?
+  second       Int
+  wpm          Float?
+  rawWpm       Float?
+  errors       Int?
+  tasksDone    Int?
   snippetsDone Int?
 
   @@unique([runId, second])

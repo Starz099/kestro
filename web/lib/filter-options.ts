@@ -32,7 +32,7 @@ export const getAllowedModes = (language: Language): readonly Mode[] => {
   return modes;
 };
 
-export const fontSizes = [12, 14, 16, 18, 20, 22, 24] as const;
+export const fontSizes = [12, 14, 16, 18, 20, 22, 24, 28, 32, 36] as const;
 export const timers = [15, 30, 60, 120] as const;
 export const modes = ["timer", "words", "snippets"] as const;
 export const wordCounts = [10, 25, 50, 100] as const;
@@ -63,7 +63,7 @@ export interface FilterPreferences {
 export const defaultFilterPreferences: FilterPreferences = {
   editorMode: "text",
   language: "english",
-  fontSize: 16,
+  fontSize: 32,
   timer: 30,
   mode: "timer",
   wordCount: 25,

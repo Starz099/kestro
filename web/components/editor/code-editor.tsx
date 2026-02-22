@@ -148,7 +148,7 @@ const CodeEditor = ({
           theme="vs-dark"
           onMount={handleEditorDidMount}
           options={{
-            fontSize: settings.fontSize,
+            fontSize: Math.min(settings.fontSize, 16),
             scrollBeyondLastLine: false,
             minimap: { enabled: false },
             readOnly: !isActive,

@@ -30,6 +30,7 @@ const Editor = ({
 }: EditorProps) => {
   // Settings
   const editorMode = useSettingsStore((s) => s.settings.editorMode);
+  const fontSize = useSettingsStore((s) => s.settings.fontSize);
 
   // Detect if we're in code mode
   const isCodeMode = editorMode === "vscode";
@@ -125,10 +126,11 @@ const Editor = ({
       <div
         ref={textAreaRef}
         tabIndex={0}
-        className="font-roboto-mono relative overflow-hidden text-[32px] leading-normal font-medium focus:outline-none"
+        className="font-roboto-mono relative overflow-hidden leading-normal font-medium focus:outline-none"
         style={{
-          height: "calc(1.5em * 3)",
-          maxHeight: "calc(1.5em * 3)",
+          fontSize: `${fontSize}px`,
+          height: `calc(${fontSize}px * 1.5 * 3)`,
+          maxHeight: `calc(${fontSize}px * 1.5 * 3)`,
         }}
       >
         <span
@@ -136,7 +138,7 @@ const Editor = ({
           className="text-foreground font-roboto-mono pointer-events-none absolute animate-pulse font-medium"
           style={{
             opacity: 0,
-            fontSize: "32px",
+            fontSize: `${fontSize}px`,
             lineHeight: "1.5",
           }}
         >

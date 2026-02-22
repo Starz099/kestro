@@ -76,6 +76,10 @@ const SettingsPanel = ({
   };
 
   const editorOptions = getAllowedEditorModes(settings.language);
+  const isCodeMode = settings.editorMode === "vscode";
+  const allowedFontSizes = isCodeMode
+    ? fontSizes.filter((s) => s <= 16)
+    : fontSizes;
 
   const handleEditorModeChange = (value: (typeof settings)["editorMode"]) => {
     const nextSettings = {
@@ -168,8 +172,8 @@ const SettingsPanel = ({
           )}
         <SettingDropdown
           icon={<TextSize />}
-          value={settings.fontSize}
-          options={fontSizes}
+          value={isCodeMode ? Math.min(settings.fontSize, 16) as typeof settings.fontSize : settings.fontSize}
+          options={allowedFontSizes}
           onChange={(v) => updateSetting("fontSize", v)}
         />
       </div>

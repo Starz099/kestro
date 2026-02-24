@@ -7,7 +7,7 @@ import Footer from "@/components/footer";
 import SettingsPanel from "@/components/settings-panel";
 import Navbar from "@/components/navbar";
 import { generateWordSequence } from "@/lib/word-generator";
-import { generateCodeSnippets } from "@/lib/code-generator";
+import { generateSnippets } from "@/lib/code_generator";
 import { getActivityType, type FilterPreferences } from "@/lib/filter-options";
 import type { CompletedItem } from "@/types/editor";
 import { useSettingsStore } from "@/store/settings-store";
@@ -44,7 +44,7 @@ const Page = () => {
     const activity = getActivityType(settings.language);
     const length = getSequenceLength(settings);
     return activity === "CODE"
-      ? generateCodeSnippets(length)
+      ? generateSnippets(settings.language as "javascript" | "cpp", length)
       : generateWordSequence(length);
   });
   const [timeLeft, setTimeLeft] = useState<number>(settings.timer);
@@ -67,7 +67,7 @@ const Page = () => {
     const length = getSequenceLength(settings);
     setWords(
       activity === "CODE"
-        ? generateCodeSnippets(length)
+        ? generateSnippets(settings.language as "javascript" | "cpp", length)
         : generateWordSequence(length),
     );
     setIsRunning(false);
@@ -124,7 +124,7 @@ const Page = () => {
     const length = getSequenceLength(settings);
     setWords(
       activity === "CODE"
-        ? generateCodeSnippets(length)
+        ? generateSnippets(settings.language as "javascript" | "cpp", length)
         : generateWordSequence(length),
     );
   }, [settings]);
@@ -159,7 +159,10 @@ const Page = () => {
         const length = getSequenceLength(nextSettings);
         setWords(
           activity === "CODE"
-            ? generateCodeSnippets(length)
+            ? generateSnippets(
+                nextSettings.language as "javascript" | "cpp",
+                length,
+              )
             : generateWordSequence(length),
         );
       }
@@ -283,7 +286,7 @@ const Page = () => {
 
     const languageMap = {
       english: "ENGLISH",
-      "c++": "CPP",
+      cpp: "CPP",
       python: "PYTHON",
       javascript: "JAVASCRIPT",
     } as const;

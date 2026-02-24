@@ -1,8 +1,8 @@
 // Shared filter options used across the application
 export const editor = ["text", "vscode"] as const;
-export const languages = ["english", "javascript"] as const;
+export const languages = ["english", "javascript", "cpp"] as const;
 
-export const codingLanguages: Language[] = ["javascript"];
+export const codingLanguages: Language[] = ["javascript", "cpp"] as const;
 
 export type ActivityType = "TEXT" | "CODE";
 

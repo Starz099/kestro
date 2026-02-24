@@ -44,7 +44,15 @@ const Page = () => {
     const activity = getActivityType(settings.language);
     const length = getSequenceLength(settings);
     return activity === "CODE"
-      ? generateSnippets(settings.language as "javascript" | "cpp", length)
+      ? generateSnippets(
+          settings.language as
+            | "javascript"
+            | "cpp"
+            | "python"
+            | "rust"
+            | "typescript",
+          length,
+        )
       : generateWordSequence(length);
   });
   const [timeLeft, setTimeLeft] = useState<number>(settings.timer);
@@ -67,7 +75,15 @@ const Page = () => {
     const length = getSequenceLength(settings);
     setWords(
       activity === "CODE"
-        ? generateSnippets(settings.language as "javascript" | "cpp", length)
+        ? generateSnippets(
+            settings.language as
+              | "javascript"
+              | "cpp"
+              | "python"
+              | "rust"
+              | "typescript",
+            length,
+          )
         : generateWordSequence(length),
     );
     setIsRunning(false);
@@ -132,7 +148,15 @@ const Page = () => {
     const length = getSequenceLength(settings);
     setWords(
       activity === "CODE"
-        ? generateSnippets(settings.language as "javascript" | "cpp", length)
+        ? generateSnippets(
+            settings.language as
+              | "javascript"
+              | "cpp"
+              | "python"
+              | "rust"
+              | "typescript",
+            length,
+          )
         : generateWordSequence(length),
     );
   }, [settings]);
@@ -168,7 +192,12 @@ const Page = () => {
         setWords(
           activity === "CODE"
             ? generateSnippets(
-                nextSettings.language as "javascript" | "cpp",
+                nextSettings.language as
+                  | "javascript"
+                  | "cpp"
+                  | "python"
+                  | "rust"
+                  | "typescript",
                 length,
               )
             : generateWordSequence(length),
@@ -308,6 +337,8 @@ const Page = () => {
       cpp: "CPP",
       python: "PYTHON",
       javascript: "JAVASCRIPT",
+      rust: "RUST",
+      typescript: "TYPESCRIPT",
     } as const;
     const modeMap = {
       timer: "TIMER",

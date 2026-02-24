@@ -201,6 +201,7 @@ export const calculateResultsMetrics = ({
   let snippetsPerSecond: number | undefined;
   const isCode =
     language === "javascript" ||
+    language === "cpp" ||
     (completedWords.length > 0 && "code" in completedWords[0]);
 
   if (isCode) {

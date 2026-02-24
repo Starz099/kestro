@@ -27,14 +27,14 @@ export const getAllowedModes = (language: Language): readonly Mode[] => {
     return ["timer", "words"] as const;
   }
   if (codingLanguages.includes(language)) {
-    return ["timer", "snippets"] as const;
+    return ["timer", "snippets", "fix"] as const;
   }
   return modes;
 };
 
 export const fontSizes = [12, 14, 16, 18, 20, 22, 24, 28, 32, 36] as const;
 export const timers = [15, 30, 60, 120] as const;
-export const modes = ["timer", "words", "snippets"] as const;
+export const modes = ["timer", "words", "snippets", "fix"] as const;
 export const wordCounts = [10, 25, 50, 100] as const;
 export const snippetCounts = [1, 2, 5, 10, 20] as const;
 

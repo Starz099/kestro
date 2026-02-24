@@ -32,6 +32,9 @@ const getTestTypeLabel = (
   if (mode === "snippets") {
     return `snippets ${snippetCount || 5} · ${durationSeconds}s`;
   }
+  if (mode === "fix") {
+    return `fix ${snippetCount || 5} · ${durationSeconds}s`;
+  }
   return `timer ${timer}s`;
 };
 
@@ -86,9 +89,11 @@ const ResultsPanel = ({
 
   const isCodeMode =
     language === "javascript" ||
+    language === "cpp" ||
     (completedWords.length > 0 && "code" in completedWords[0]);
 
   if (isCodeMode) {
+    const isFixMode = settings.mode === "fix";
     const snippetsPerMinute =
       durationSeconds > 0 ? (completedWords.length / durationSeconds) * 60 : 0;
 
@@ -97,7 +102,7 @@ const ResultsPanel = ({
         <div className="flex gap-16">
           <div className="flex flex-col items-center">
             <div className="text-muted-foreground text-sm tracking-widest uppercase">
-              Snippets Done
+              {isFixMode ? "Fixes Done" : "Snippets Done"}
             </div>
             <div className="font-roboto-mono text-primary text-7xl leading-none font-black">
               {completedWords.length}
@@ -105,7 +110,7 @@ const ResultsPanel = ({
           </div>
           <div className="flex flex-col items-center border-x px-16">
             <div className="text-muted-foreground text-sm tracking-widest uppercase">
-              Snippets / Min
+              {isFixMode ? "Fixes / Min" : "Snippets / Min"}
             </div>
             <div className="font-roboto-mono text-primary text-7xl leading-none font-black">
               {snippetsPerMinute.toFixed(1)}

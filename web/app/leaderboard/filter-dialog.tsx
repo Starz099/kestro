@@ -190,7 +190,7 @@ const FilterDialog = ({
           </div>
 
           {/* Timer or Word Count based on mode */}
-          {mode === "timer" && (
+          {(mode === "timer" || mode === "fix") && (
             <SettingDropdown
               icon={<Clock />}
               value={timer}

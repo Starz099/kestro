@@ -22,7 +22,7 @@ const CODE_SEQUENCE_LENGTH = 40;
 const getSequenceLength = (settings: FilterPreferences) => {
   const activity = getActivityType(settings.language);
 
-  if (settings.mode === "timer") {
+  if (settings.mode === "timer" || settings.mode === "fix") {
     return activity === "CODE" ? CODE_SEQUENCE_LENGTH : WORD_SEQUENCE_LENGTH;
   }
 
@@ -81,9 +81,10 @@ const Page = () => {
   const isTimerMode = settings.mode === "timer";
   const isWordsMode = settings.mode === "words";
   const isSnippetsMode = settings.mode === "snippets";
+  const isFixMode = settings.mode === "fix";
 
   useEffect(() => {
-    if (!isTimerMode || !isRunning) {
+    if (!(isTimerMode || isFixMode) || !isRunning) {
       return undefined;
     }
 
@@ -101,17 +102,24 @@ const Page = () => {
     }, 1000);
 
     return () => window.clearInterval(intervalId);
-  }, [isRunning, isTimerMode]);
+  }, [isRunning, isTimerMode, isFixMode]);
 
   const handleTypingStart = useCallback(() => {
     if (hasEnded || isRunning) {
       return;
     }
 
-    if (isTimerMode || isWordsMode || isSnippetsMode) {
+    if (isTimerMode || isWordsMode || isSnippetsMode || isFixMode) {
       setIsRunning(true);
     }
-  }, [hasEnded, isRunning, isTimerMode, isWordsMode, isSnippetsMode]);
+  }, [
+    hasEnded,
+    isRunning,
+    isTimerMode,
+    isWordsMode,
+    isSnippetsMode,
+    isFixMode,
+  ]);
 
   const handleRestart = useCallback(() => {
     setIsRunning(false);
@@ -213,7 +221,11 @@ const Page = () => {
   ]);
 
   useEffect(() => {
-    if (!(isWordsMode || isSnippetsMode) || !isRunning || hasEnded) {
+    if (
+      !(isWordsMode || isSnippetsMode || isFixMode) ||
+      !isRunning ||
+      hasEnded
+    ) {
       return undefined;
     }
 
@@ -228,7 +240,14 @@ const Page = () => {
     }, 200);
 
     return () => window.clearInterval(intervalId);
-  }, [hasEnded, isRunning, isWordsMode, typingStartedAt, isSnippetsMode]);
+  }, [
+    hasEnded,
+    isRunning,
+    isWordsMode,
+    typingStartedAt,
+    isSnippetsMode,
+    isFixMode,
+  ]);
 
   const handleStatsChange = useCallback(
     (nextCompletedWords: CompletedItem[]) => {
@@ -245,7 +264,7 @@ const Page = () => {
           return;
         }
       } else {
-        // Snippets mode logic
+        // Snippets mode logic (Fix mode is timed, so it doesn't end based on count)
         if (
           !isSnippetsMode ||
           hasEnded ||
@@ -294,6 +313,7 @@ const Page = () => {
       timer: "TIMER",
       words: "WORDS",
       snippets: "SNIPPETS",
+      fix: "FIX",
     } as const;
     const editorMap = {
       text: "TEXT",
@@ -307,7 +327,10 @@ const Page = () => {
       mode: modeMap[settings.mode],
       editor: editorMap[settings.editorMode],
       config: {
-        timerSeconds: settings.mode === "timer" ? settings.timer : undefined,
+        timerSeconds:
+          settings.mode === "timer" || settings.mode === "fix"
+            ? settings.timer
+            : undefined,
         wordCount: settings.mode === "words" ? settings.wordCount : undefined,
         snippetCount:
           settings.mode === "snippets" ? settings.snippetCount : undefined,
@@ -379,7 +402,7 @@ const Page = () => {
             onSettingsChange={handleSettingsChange}
           />
         )}
-        {isTimerMode && isRunning && !hasEnded && (
+        {(isTimerMode || isFixMode) && isRunning && !hasEnded && (
           <div className="font-roboto-mono text-muted-foreground mt-6 w-full text-left text-2xl">
             {timeLeft}
           </div>

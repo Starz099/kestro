@@ -145,7 +145,7 @@ const SettingsPanel = ({
       <span className="text-muted-foreground text-xs">|</span>
 
       <div className="flex items-center gap-1.5">
-        {settings.mode === "timer" && (
+        {(settings.mode === "timer" || settings.mode === "fix") && (
           <SettingDropdown
             icon={<Clock />}
             value={settings.timer}

@@ -66,7 +66,7 @@ export default function LeaderboardContent({
       editor: filters.editorMode,
     });
 
-    if (filters.mode === "timer") {
+    if (filters.mode === "timer" || filters.mode === "fix") {
       params.set("timer", String(filters.timer));
     }
     if (filters.mode === "words") {
@@ -138,7 +138,7 @@ export default function LeaderboardContent({
           {filters.language}
         </span>
         <span className="bg-muted px-2 py-0.5 shadow-md">{filters.mode}</span>
-        {filters.mode === "timer" && (
+        {(filters.mode === "timer" || filters.mode === "fix") && (
           <span className="bg-muted px-2 py-0.5 shadow-md">
             {filters.timer}s
           </span>

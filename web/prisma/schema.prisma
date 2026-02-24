@@ -83,6 +83,7 @@ enum Mode {
   ZEN
   TASKS
   SNIPPETS
+  FIX
 }
 
 enum EditorMode {

@@ -7,6 +7,7 @@ import { useSettingsStore } from "@/store/settings-store";
 import type { CompletedSnippet } from "@/types/coding";
 import Rotate from "@/components/svgs/Rotate";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { breakCode } from "@/lib/code-breaker";
 
 type CodeEditorProps = {
   snippets: string[];
@@ -30,6 +31,15 @@ const CodeEditor = ({
   const editorRef = useRef<any>(null);
 
   const currentSnippet = snippets[currentWordIndex] || "";
+
+  // Initialize modified value based on mode
+  useEffect(() => {
+    if (settings.mode === "fix" && currentSnippet) {
+      setModifiedValue(breakCode(currentSnippet));
+    } else {
+      setModifiedValue("");
+    }
+  }, [currentWordIndex, currentSnippet, settings.mode]);
 
   // Sound playback setup
   const soundRef = useRef<HTMLAudioElement | null>(null);
@@ -117,8 +127,13 @@ const CodeEditor = ({
 
         if (nextIndex < snippets.length) {
           state.setCurrentWordIndex(nextIndex);
-          setModifiedValue("");
-          modifiedEditor.setValue("");
+          const nextSnippet = snippets[nextIndex];
+          const newValue =
+            useSettingsStore.getState().settings.mode === "fix"
+              ? breakCode(nextSnippet)
+              : "";
+          setModifiedValue(newValue);
+          modifiedEditor.setValue(newValue);
         }
       }
     });

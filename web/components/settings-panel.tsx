@@ -172,7 +172,11 @@ const SettingsPanel = ({
           )}
         <SettingDropdown
           icon={<TextSize />}
-          value={isCodeMode ? Math.min(settings.fontSize, 16) as typeof settings.fontSize : settings.fontSize}
+          value={
+            isCodeMode
+              ? (Math.min(settings.fontSize, 16) as typeof settings.fontSize)
+              : settings.fontSize
+          }
           options={allowedFontSizes}
           onChange={(v) => updateSetting("fontSize", v)}
         />

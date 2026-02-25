@@ -1,6 +1,6 @@
 "use client";
+import { DiffEditor, loader } from "@monaco-editor/react";
 
-import { DiffEditor } from "@monaco-editor/react";
 import { useCallback, useRef, useState, useEffect } from "react";
 import { useEditorStore } from "@/store/editor-store";
 import { useSettingsStore } from "@/store/settings-store";
@@ -24,6 +24,19 @@ const CodeEditor = ({
   onStatsChange,
   onRestart,
 }: CodeEditorProps) => {
+  // Load Dracula theme JSON using require for compatibility
+  useEffect(() => {
+    async function loadTheme() {
+      const draculaTheme = await import("./Dracula.json");
+      loader.init().then((monaco) => {
+        monaco.editor.defineTheme(
+          "dracula",
+          draculaTheme.default || draculaTheme,
+        );
+      });
+    }
+    loadTheme();
+  }, []);
   const { currentWordIndex, resetTypingState } = useEditorStore();
 
   const settings = useSettingsStore((s) => s.settings);
@@ -34,10 +47,13 @@ const CodeEditor = ({
 
   // Initialize modified value based on mode
   useEffect(() => {
+    const fn = async (x: string) => {
+      setModifiedValue(x);
+    };
     if (settings.mode === "fix" && currentSnippet) {
-      setModifiedValue(breakCode(currentSnippet));
+      fn(breakCode(currentSnippet));
     } else {
-      setModifiedValue("");
+      fn("");
     }
   }, [currentWordIndex, currentSnippet, settings.mode]);
 
@@ -160,7 +176,7 @@ const CodeEditor = ({
           original={currentSnippet}
           modified={modifiedValue}
           language={settings.language.toLowerCase()}
-          theme="vs-dark"
+          theme="dracula"
           onMount={handleEditorDidMount}
           options={{
             fontSize: Math.min(settings.fontSize, 16),

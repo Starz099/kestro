@@ -27,7 +27,7 @@ const CodeEditor = ({
   // Load Dracula theme JSON using require for compatibility
   useEffect(() => {
     async function loadTheme() {
-      const draculaTheme = await import("./Dracula.json");
+      const draculaTheme = await import("./themes/Dracula.json");
       loader.init().then((monaco) => {
         monaco.editor.defineTheme(
           "dracula",

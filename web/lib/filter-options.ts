@@ -1,5 +1,5 @@
 // Shared filter options used across the application
-export const editor = ["text", "vscode"] as const;
+export const editor = ["text", "vscode", "vim"] as const;
 export const languages = [
   "english",
   "javascript",
@@ -30,7 +30,7 @@ export const getAllowedEditorModes = (
     return ["text"] as const;
   }
   if (codingLanguages.includes(language)) {
-    return ["vscode"] as const;
+    return ["vscode", "vim"] as const;
   }
   return editor;
 };

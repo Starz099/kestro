@@ -12,6 +12,7 @@ import { useEditorStore } from "@/store/editor-store";
 import { useSettingsStore } from "@/store/settings-store";
 
 import CodeEditor from "./code-editor";
+import VimEditor from "./vim-editor";
 
 type EditorProps = {
   words: string[];
@@ -33,7 +34,7 @@ const Editor = ({
   const fontSize = useSettingsStore((s) => s.settings.fontSize);
 
   // Detect if we're in code mode
-  const isCodeMode = editorMode === "vscode";
+  const isCodeMode = editorMode === "vscode" || editorMode === "vim";
 
   // Word mode hooks
   const restartKey = useEditorStore((state) => state.restartKey);
@@ -108,6 +109,18 @@ const Editor = ({
   // --- CODE MODE RENDER ---
   if (isCodeMode) {
     const settings = useSettingsStore.getState().settings;
+    if (editorMode === "vim") {
+      return (
+        <VimEditor
+          key={`${restartKey}-${settings.language}`}
+          snippets={words}
+          isActive={isActive}
+          onTypingStart={onTypingStart}
+          onStatsChange={onStatsChange}
+          onRestart={onRestart}
+        />
+      );
+    }
     return (
       <CodeEditor
         key={`${restartKey}-${settings.language}`}

@@ -31,7 +31,7 @@ const CodeEditor = ({
       loader.init().then((monaco) => {
         monaco.editor.defineTheme(
           "dracula",
-          draculaTheme.default || draculaTheme,
+          (draculaTheme.default || draculaTheme) as any,
         );
       });
     }

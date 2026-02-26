@@ -14,7 +14,6 @@ import { useSettingsStore } from "@/store/settings-store";
 import { useEditorStore } from "@/store/editor-store";
 import ResultsPanel from "@/components/results/results-panel";
 import { calculateResultsMetrics } from "@/lib/results-metrics";
-import Tracker from "@/components/Tracker";
 
 const WORD_SEQUENCE_LENGTH = 700;
 const CODE_SEQUENCE_LENGTH = 40;
@@ -424,7 +423,6 @@ const Page = () => {
 
   return (
     <div className="flex h-full w-5/6 flex-col items-center justify-between">
-      <Tracker />
       <Navbar onKeyboardClick={regenerateWords} />
       <div className="">
         {/* Hide settings bar when game is running in any mode */}

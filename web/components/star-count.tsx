@@ -5,14 +5,9 @@ import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import StarIcon from "./ui/star-icon";
-import { posthog } from "posthog-js";
 
 export default function StarCount() {
   const [starCount, setStarCount] = useState<string>("...");
-
-  function StarButtonClicked() {
-    posthog.capture("star_button_clicked", { amount: 1 });
-  }
 
   useEffect(() => {
     const fetchStarCount = async () => {
@@ -38,7 +33,6 @@ export default function StarCount() {
 
   return (
     <Link
-      onClick={StarButtonClicked}
       href="https://github.com/Starz099/kestro"
       target="_blank"
       className="hover:text-primary flex gap-1 transition-colors"

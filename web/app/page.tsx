@@ -426,8 +426,9 @@ const Page = () => {
     <div className="flex h-full w-5/6 flex-col items-center justify-between">
       <Tracker />
       <Navbar onKeyboardClick={regenerateWords} />
-      <div className="mb-24">
-        {!hasEnded && (
+      <div className="">
+        {/* Hide settings bar when game is running in any mode */}
+        {!isRunning && !hasEnded && (
           <SettingsPanel
             settings={settings}
             onSettingsChange={handleSettingsChange}

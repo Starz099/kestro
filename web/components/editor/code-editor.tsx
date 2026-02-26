@@ -161,8 +161,11 @@ const CodeEditor = ({
   }, [onRestart, resetTypingState]);
 
   return (
-    <div className="flex w-full flex-col items-center gap-4">
-      <div className="flex w-full max-w-5xl items-center justify-between px-2">
+    <div
+      className="flex w-full flex-col items-center gap-4"
+      style={{ minWidth: "min(100vw, 900px)" }}
+    >
+      <div className="flex w-full items-center justify-between px-2">
         <div className="text-muted-foreground font-roboto-mono text-sm">
           Snippet {currentWordIndex + 1} / {snippets.length}
         </div>
@@ -170,30 +173,43 @@ const CodeEditor = ({
           {settings.language}
         </div>
       </div>
-      <div className="border-border h-[450px] w-full max-w-5xl overflow-hidden rounded-md border shadow-lg">
-        <DiffEditor
-          width="60vw"
-          original={currentSnippet}
-          modified={modifiedValue}
-          language={settings.language.toLowerCase()}
-          theme="dracula"
-          onMount={handleEditorDidMount}
-          options={{
-            fontSize: Math.min(settings.fontSize, 16),
-            scrollBeyondLastLine: false,
-            minimap: { enabled: false },
-            readOnly: !isActive,
-            renderSideBySide: true,
-            originalEditable: false,
-            lineNumbers: "off",
-            glyphMargin: false,
-            folding: false,
-            lineDecorationsWidth: 0,
-            lineNumbersMinChars: 3,
-            ignoreTrimWhitespace: false,
-            renderWhitespace: "all",
-          }}
-        />
+      <div className="border-border relative flex h-[450px] w-full min-w-xs justify-center overflow-hidden rounded-md border shadow-lg">
+        <div className="relative h-full w-[60vw]">
+          <DiffEditor
+            width="100%"
+            height="100%"
+            original={currentSnippet}
+            modified={modifiedValue}
+            language={settings.language.toLowerCase()}
+            theme="dracula"
+            onMount={handleEditorDidMount}
+            options={{
+              fontSize: Math.min(settings.fontSize, 16),
+              scrollBeyondLastLine: false,
+              minimap: { enabled: false },
+              readOnly: !isActive,
+              renderSideBySide: true,
+              originalEditable: false,
+              lineNumbers: "off",
+              glyphMargin: false,
+              folding: false,
+              lineDecorationsWidth: 0,
+              lineNumbersMinChars: 3,
+              ignoreTrimWhitespace: false,
+              renderWhitespace: "all",
+              diffWordWrap: "on",
+              enableSplitViewResizing: false,
+              renderIndicators: false,
+            }}
+          />
+          {/* Overlay to block diff arrows and sash interaction */}
+          <div
+            className="absolute top-0 bottom-0 left-1/2 z-10 w-8 -translate-x-13 bg-transparent"
+            style={{ pointerEvents: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
       <Tooltip>
         <TooltipTrigger onClick={handleRestart}>

@@ -224,8 +224,11 @@ export default function VimEditor({
   }, [onRestart, resetTypingState]);
 
   return (
-    <div className="flex w-full flex-col items-center gap-4">
-      <div className="flex w-full max-w-5xl items-center justify-between px-2">
+    <div
+      className="flex w-full flex-col items-center gap-4"
+      style={{ minWidth: "min(100vw, 900px)" }}
+    >
+      <div className="flex w-full items-center justify-between px-2">
         <div className="text-muted-foreground font-roboto-mono text-sm">
           Snippet {currentWordIndex + 1} / {snippets.length}
         </div>
@@ -233,7 +236,7 @@ export default function VimEditor({
           {settings.language} (VIM)
         </div>
       </div>
-      <div className="border-border relative h-[450px] w-full max-w-5xl overflow-hidden rounded-md border bg-[#282c34] shadow-lg">
+      <div className="border-border relative h-[450px] w-full min-w-xs overflow-hidden rounded-md border bg-[#282c34] shadow-lg">
         {!isStarted ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-[#282c34] text-white">
             <p className="text-xl font-medium opacity-80">Vim Mode</p>

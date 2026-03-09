@@ -7,6 +7,7 @@ export const languages = [
   "python",
   "rust",
   "typescript",
+  "java",
 ] as const;
 
 export const codingLanguages: Language[] = [
@@ -15,6 +16,7 @@ export const codingLanguages: Language[] = [
   "python",
   "rust",
   "typescript",
+  "java",
 ] as const;
 
 export type ActivityType = "TEXT" | "CODE";

@@ -1,8 +1,4 @@
-import type {
-  CompletedWord,
-  CompletedSnippet,
-  CompletedItem,
-} from "@/types/editor";
+import type { CompletedItem } from "@/types/editor";
 import type {
   CharacterBreakdown,
   ResultsMetrics,

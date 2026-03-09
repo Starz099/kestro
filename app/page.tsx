@@ -338,6 +338,7 @@ const Page = () => {
       javascript: "JAVASCRIPT",
       rust: "RUST",
       typescript: "TYPESCRIPT",
+      java: "JAVA",
     } as const;
     const modeMap = {
       timer: "TIMER",

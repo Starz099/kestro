@@ -50,17 +50,17 @@ export const GET = async (req: Request) => {
     take: 100,
   });
 
-  // Group runs by user and select best run by codingWpm for coding, rawWpm for text
+  // Group runs by user and select best run by codingWpm for coding, wpm for text
   const bestRunsByUser: Record<string, (typeof runs)[0]> = {};
   for (const run of runs) {
     const username = run.user?.username ?? run.username ?? run.userId;
     const isCoding = run.language === "JAVASCRIPT" || run.activity === "CODE";
-    const metric = isCoding ? (run.codingWpm ?? 0) : (run.rawWpm ?? 0);
+    const metric = isCoding ? (run.codingWpm ?? 0) : (run.wpm ?? 0);
     const currentBest = bestRunsByUser[username];
     const currentMetric = currentBest
       ? isCoding
         ? (currentBest.codingWpm ?? 0)
-        : (currentBest.rawWpm ?? 0)
+        : (currentBest.wpm ?? 0)
       : 0;
     if (!currentBest || metric > currentMetric) {
       bestRunsByUser[username] = run;
@@ -70,8 +70,8 @@ export const GET = async (req: Request) => {
     .sort((a, b) => {
       const isCodingA = a.language === "JAVASCRIPT" || a.activity === "CODE";
       const isCodingB = b.language === "JAVASCRIPT" || b.activity === "CODE";
-      const metricA = isCodingA ? (a.codingWpm ?? 0) : (a.rawWpm ?? 0);
-      const metricB = isCodingB ? (b.codingWpm ?? 0) : (b.rawWpm ?? 0);
+      const metricA = isCodingA ? (a.codingWpm ?? 0) : (a.wpm ?? 0);
+      const metricB = isCodingB ? (b.codingWpm ?? 0) : (b.wpm ?? 0);
       return metricB - metricA;
     })
     .map((run, index) => {
